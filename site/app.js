@@ -107,21 +107,27 @@ function renderMatches(data) {
   `;
 
   document.querySelector("#matches").innerHTML = data.matches
-    .map((match) => `
-      <tr>
-        <td>${match.id}. ${match.label}</td>
-        <td>${match.group}</td>
-        <td>${match.round}</td>
-        <td>${match.score || "-"}</td>
-        <td>
-          <div class="points-list">
-            ${data.players.map((player) => `
-              <span class="score-chip ${pointClass(match.points[player], Boolean(match.score))}"><b>${player}</b> ${match.points[player]}</span>
-            `).join("")}
-          </div>
-        </td>
-      </tr>
-    `)
+    .map((match) => {
+      const values = data.players.map((player) => match.points[player]);
+      const total = values.reduce((sum, points) => sum + points, 0);
+      const best = Math.max(...values);
+      return `
+        <tr>
+          <td>${match.id}. ${match.label}</td>
+          <td>${match.group}</td>
+          <td>${match.round}</td>
+          <td>${match.score || "-"}</td>
+          <td>
+            <div class="points-list">
+              ${data.players.map((player) => `
+                <span class="score-chip ${pointClass(match.points[player], Boolean(match.score))}"><b>${player}</b> ${match.points[player]}</span>
+              `).join("")}
+            </div>
+            <div class="mobile-points-summary">${match.score ? `Total ${total} · Best ${best}` : "Not played yet"}</div>
+          </td>
+        </tr>
+      `;
+    })
     .join("");
 }
 

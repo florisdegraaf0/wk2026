@@ -158,6 +158,10 @@ canvas {
   border-radius: 999px;
 }
 
+.mobile-points-summary {
+  display: none;
+}
+
 code {
   padding: 2px 5px;
   border-radius: 4px;
@@ -172,5 +176,33 @@ code {
   select {
     width: 100%;
     margin-top: 8px;
+  }
+
+  #matches th:nth-child(2),
+  #matches td:nth-child(2),
+  #matches th:nth-child(3),
+  #matches td:nth-child(3) {
+    display: none;
+  }
+
+  #matches th,
+  #matches td {
+    padding: 9px 6px;
+  }
+
+  #matches th:nth-child(5),
+  #matches td:nth-child(5) {
+    text-align: right;
+  }
+
+  #matches .points-list {
+    display: none;
+  }
+
+  .mobile-points-summary {
+    display: block;
+    color: #637069;
+    font-size: 12px;
+    white-space: nowrap;
   }
 }
