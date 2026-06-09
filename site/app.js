@@ -344,24 +344,24 @@ function bindChartHover() {
 function groupedLeaderboards(data, field, label) {
   const values = sortValues([...new Set(data.matches.map((match) => match[field]))]);
 
-  return values
+  return `<div class="mini-board-grid">${
+    values
     .map((value) => {
       const rows = rowsForMatches(data, data.matches.filter((match) => match[field] === value));
       return `
-        <div class="mini-heading">${label} ${value}</div>
-        <table>
-          <tbody>
-            ${rows.map((row, index) => `
-              <tr>
-                <td>${index + 1}. ${row.player}</td>
-                <td>${row.points}</td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
+        <article class="mini-board">
+          <div class="mini-heading">${label} ${value}</div>
+          ${rows.slice(0, 3).map((row, index) => `
+            <div class="mini-row">
+              <span>${index + 1}. ${row.player}</span>
+              <b>${row.points}</b>
+            </div>
+          `).join("")}
+        </article>
       `;
     })
-    .join("");
+    .join("")
+  }</div>`;
 }
 
 function countryRows(data) {
@@ -443,6 +443,33 @@ function winnerRows(data) {
   })).sort((a, b) => b.points - a.points || a.player.localeCompare(b.player));
 }
 
+function hotStreakRows(data) {
+  return data.players
+    .map((player) => {
+      let best = { points: 0, start: 0, end: 0 };
+      const playedMatches = data.matches.filter((match) => match.score);
+
+      for (let start = 0; start < playedMatches.length; start += 1) {
+        let total = 0;
+        for (let end = start; end < playedMatches.length; end += 1) {
+          total += playedMatches[end].points[player];
+          if (total > best.points) {
+            best = { points: total, start, end };
+          }
+        }
+      }
+
+      const startMatch = playedMatches[best.start];
+      const endMatch = playedMatches[best.end];
+      return {
+        player,
+        points: best.points,
+        games: startMatch && endMatch ? `${startMatch.id}-${endMatch.id}` : "-",
+      };
+    })
+    .sort((a, b) => b.points - a.points || a.player.localeCompare(b.player));
+}
+
 function gameRows(data) {
   return data.matches
     .filter((match) => match.score)
@@ -489,6 +516,12 @@ function renderSelectedStat(data) {
   }
   if (selected === "exactScores") {
     html = simpleTable(["Player", "Exact"], exactRows(data), ["player", "exact"]);
+  }
+  if (selected === "hotStreaks") {
+    html = `
+      <p class="stat-note">Best scoring run over consecutive played games. A streak can be short or long; it keeps growing as long as the total run is the player's best.</p>
+      ${simpleTable(["Player", "Points", "Games"], hotStreakRows(data), ["player", "points", "games"])}
+    `;
   }
   if (selected === "winner") {
     const title = data.winner?.actual ? `Actual winner: ${data.winner.actual}` : "Actual winner not filled yet";

@@ -102,6 +102,31 @@ h3 {
   text-align: right;
 }
 
+.mini-board-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.mini-board {
+  padding: 10px;
+  border: 1px solid #e6eee8;
+  border-radius: 6px;
+  background: #fbfdfb;
+}
+
+.mini-board .mini-heading {
+  margin: 0 0 8px;
+}
+
+.mini-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 14px;
+}
+
 th,
 td {
   padding: 10px;
