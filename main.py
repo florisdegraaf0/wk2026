@@ -1,6 +1,10 @@
 import json
+import os
 import re
+from io import BytesIO
 from pathlib import Path
+from urllib.error import URLError
+from urllib.request import urlopen
 
 import pandas as pd
 
@@ -9,6 +13,8 @@ ROOT = Path(__file__).parent
 INPUT_FILE = ROOT / "input.xlsx"
 OUTPUT_FILE = ROOT / "site" / "data.json"
 WINNER_POINTS = 50
+GOOGLE_SHEET_ID = os.environ.get("GOOGLE_SHEET_ID", "1fozCeduyiHd2W66pqQHGKjAPH5zBtczB24yjBeGOyK8")
+GOOGLE_SHEET_EXPORT_URL = f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}/export?format=xlsx"
 
 
 def parse_score(score):
@@ -68,9 +74,23 @@ def calculate_points(prediction, actual_score):
     return 0
 
 
-def read_winner_predictions():
+def open_input_workbook():
+    if os.environ.get("USE_LOCAL_INPUT") == "1":
+        return pd.ExcelFile(INPUT_FILE)
+
     try:
-        winner_df = pd.read_excel(INPUT_FILE, sheet_name="winner", header=None)
+        with urlopen(GOOGLE_SHEET_EXPORT_URL, timeout=30) as response:
+            return pd.ExcelFile(BytesIO(response.read()))
+    except (OSError, URLError) as error:
+        if INPUT_FILE.exists():
+            print(f"Could not download Google Sheet, using {INPUT_FILE.name}: {error}")
+            return pd.ExcelFile(INPUT_FILE)
+        raise
+
+
+def read_winner_predictions(workbook):
+    try:
+        winner_df = pd.read_excel(workbook, sheet_name="winner", header=None)
     except ValueError:
         return "", {}
 
@@ -91,10 +111,11 @@ def read_winner_predictions():
 
 
 def build_data():
-    df = pd.read_excel(INPUT_FILE, sheet_name="Blad1")
-    df = df[df["ID"].notna()]
+    workbook = open_input_workbook()
+    df = pd.read_excel(workbook, sheet_name="Blad1")
+    df = df[df["ID"].notna() & df["Country_1"].notna() & df["Country_2"].notna()]
     match_players = [str(column) for column in df.columns[6:] if not str(column).startswith("Unnamed")]
-    actual_winner, winner_predictions = read_winner_predictions()
+    actual_winner, winner_predictions = read_winner_predictions(workbook)
     players = list(match_players)
     for player in winner_predictions:
         if player not in players:
@@ -149,6 +170,7 @@ def build_data():
 
     return {
         "generatedAt": pd.Timestamp.now().isoformat(timespec="seconds"),
+        "source": "Google Sheets" if os.environ.get("USE_LOCAL_INPUT") != "1" else INPUT_FILE.name,
         "players": players,
         "matches": matches,
         "winner": winner,

@@ -14,3 +14,6 @@ wheels/
 
 # Excel lock files
 ~$*.xlsx
+
+# Optional local fallback input. Production reads the shared Google Sheet.
+input.xlsx
