@@ -70,17 +70,75 @@ table {
 
 .next-game-card {
   display: grid;
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px 24px;
+  align-items: start;
+  padding: 18px;
+  border: 1px solid #cfe2d2;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f7fbf8 0%, #ffffff 58%, #fff8eb 100%);
+  box-shadow: 0 8px 22px rgba(24, 64, 42, 0.08);
 }
 
 .next-game-card h3 {
-  margin: 4px 0 0;
-  font-size: 22px;
+  margin: 6px 0;
+  font-size: 28px;
+  line-height: 1.1;
 }
 
 .next-game-meta {
   color: #637069;
   font-size: 14px;
+}
+
+.next-game-kicker {
+  display: inline-flex;
+  width: fit-content;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #0b7a45;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.next-game-countdown {
+  display: grid;
+  grid-template-columns: repeat(4, 64px);
+  gap: 8px;
+}
+
+.countdown-unit {
+  display: grid;
+  gap: 3px;
+  place-items: center;
+  min-height: 64px;
+  border: 1px solid #d7e3d8;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.countdown-unit b {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.countdown-unit span {
+  color: #637069;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.next-game-predictions {
+  grid-column: 1 / -1;
+}
+
+.prediction-card-next {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.86);
 }
 
 .match-summary {
@@ -313,6 +371,27 @@ code {
 @media (max-width: 760px) {
   .section-head {
     display: block;
+  }
+
+  .next-game-card {
+    grid-template-columns: 1fr;
+    padding: 14px;
+  }
+
+  .next-game-card h3 {
+    font-size: 24px;
+  }
+
+  .next-game-countdown {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .countdown-unit {
+    min-height: 58px;
+  }
+
+  .countdown-unit b {
+    font-size: 19px;
   }
 
   select {

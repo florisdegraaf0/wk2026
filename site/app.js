@@ -1,4 +1,5 @@
 const colors = ["#0b7a45", "#c0362c", "#286b9a", "#c58a24", "#6f42c1", "#222222"];
+const matchTimeZoneOffset = "+02:00";
 let currentData;
 let chartState;
 
@@ -135,13 +136,56 @@ function matchDateTimeLabel(match) {
 
 function matchTimestamp(match) {
   if (!match.date) return Number.MAX_SAFE_INTEGER;
-  const value = Date.parse(`${match.date}T${match.time || "00:00"}`);
+  const value = Date.parse(`${match.date}T${match.time || "00:00"}:00${matchTimeZoneOffset}`);
   return Number.isNaN(value) ? Number.MAX_SAFE_INTEGER : value;
 }
 
+function formatCountdown(milliseconds) {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return {
+    days,
+    hours: String(hours).padStart(2, "0"),
+    minutes: String(minutes).padStart(2, "0"),
+    seconds: String(seconds).padStart(2, "0"),
+  };
+}
+
+function updateNextGameCountdown() {
+  const countdown = document.querySelector("[data-countdown-target]");
+  if (!countdown) return;
+
+  const target = Number(countdown.dataset.countdownTarget);
+  const remaining = target - Date.now();
+
+  if (remaining <= 0) {
+    countdown.innerHTML = `
+      <span class="countdown-unit"><b>00</b><span>days</span></span>
+      <span class="countdown-unit"><b>00</b><span>hours</span></span>
+      <span class="countdown-unit"><b>00</b><span>min</span></span>
+      <span class="countdown-unit"><b>00</b><span>sec</span></span>
+    `;
+    countdown.closest(".next-game-card")?.classList.add("is-starting");
+    return;
+  }
+
+  const time = formatCountdown(remaining);
+  countdown.innerHTML = `
+    <span class="countdown-unit"><b>${String(time.days).padStart(2, "0")}</b><span>days</span></span>
+    <span class="countdown-unit"><b>${time.hours}</b><span>hours</span></span>
+    <span class="countdown-unit"><b>${time.minutes}</b><span>min</span></span>
+    <span class="countdown-unit"><b>${time.seconds}</b><span>sec</span></span>
+  `;
+}
+
 function renderNextGame(data) {
+  const now = Date.now();
   const next = data.matches
-    .filter((match) => !match.score)
+    .filter((match) => matchTimestamp(match) > now)
     .sort((a, b) => matchTimestamp(a) - matchTimestamp(b) || a.id - b.id)[0];
 
   const section = document.querySelector("#nextGameSection");
@@ -151,22 +195,31 @@ function renderNextGame(data) {
   }
 
   section.style.display = "";
+  const kickoff = matchTimestamp(next);
   document.querySelector("#nextGame").innerHTML = `
     <div class="next-game-card">
-      <div>
-        <div class="next-game-meta">${matchDateTimeLabel(next)} · Group ${next.group} · Round ${next.round}</div>
+      <div class="next-game-main">
+        <div class="next-game-kicker">Coming up</div>
         <h3>${next.label}</h3>
+        <div class="next-game-meta">${matchDateTimeLabel(next)} · Group ${next.group} · Round ${next.round}</div>
       </div>
-      <div class="prediction-grid">
-        ${data.players.map((player) => `
-          <div class="prediction-card">
-            <b>${player}</b>
-            <span>${next.predictions?.[player] || "-"}</span>
-          </div>
-        `).join("")}
+      <div class="next-game-countdown" data-countdown-target="${kickoff}" aria-live="polite"></div>
+      <div class="next-game-predictions">
+        <div class="mini-heading">Predictions</div>
+        <div class="prediction-grid">
+          ${data.players.map((player) => `
+            <div class="prediction-card prediction-card-next">
+              <b>${player}</b>
+              <span>${next.predictions?.[player] || "-"}</span>
+            </div>
+          `).join("")}
+        </div>
       </div>
     </div>
   `;
+  updateNextGameCountdown();
+  window.clearInterval(window.nextGameCountdownTimer);
+  window.nextGameCountdownTimer = window.setInterval(updateNextGameCountdown, 1000);
 }
 
 function renderMatches(data) {
