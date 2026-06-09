@@ -141,8 +141,8 @@ function renderMatches(data) {
       const total = values.reduce((sum, points) => sum + points, 0);
       const best = Math.max(...values);
       return `
-        <tr>
-          <td>${match.id}. ${match.label}</td>
+        <tr class="match-summary" data-match-id="${match.id}" tabindex="0" aria-expanded="false">
+          <td><span class="toggle-marker">+</span>${match.id}. ${match.label}</td>
           <td>${match.group}</td>
           <td>${match.round}</td>
           <td>${match.score || "-"}</td>
@@ -155,9 +155,44 @@ function renderMatches(data) {
             <div class="mobile-points-summary">${match.score ? `Total ${total} · Best ${best}` : "Not played yet"}</div>
           </td>
         </tr>
+        <tr class="match-details" data-match-details="${match.id}">
+          <td colspan="5">
+            <div class="prediction-grid">
+              ${data.players.map((player) => `
+                <div class="prediction-card">
+                  <b>${player}</b>
+                  <span>${match.predictions?.[player] || "-"}</span>
+                  <span class="score-chip ${pointClass(match.points[player], Boolean(match.score))}">${match.points[player]} pts</span>
+                </div>
+              `).join("")}
+            </div>
+          </td>
+        </tr>
       `;
     })
     .join("");
+
+  bindMatchToggles();
+}
+
+function toggleMatch(row) {
+  const matchId = row.dataset.matchId;
+  const details = document.querySelector(`[data-match-details="${matchId}"]`);
+  const open = row.classList.toggle("is-open");
+  row.setAttribute("aria-expanded", String(open));
+  details.classList.toggle("is-open", open);
+  row.querySelector(".toggle-marker").textContent = open ? "-" : "+";
+}
+
+function bindMatchToggles() {
+  document.querySelectorAll(".match-summary").forEach((row) => {
+    row.addEventListener("click", () => toggleMatch(row));
+    row.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      toggleMatch(row);
+    });
+  });
 }
 
 function drawChart(data) {

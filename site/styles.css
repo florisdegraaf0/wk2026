@@ -68,6 +68,50 @@ table {
   font-size: 14px;
 }
 
+.match-summary {
+  cursor: pointer;
+}
+
+.match-summary:hover {
+  background: #f8fbf8;
+}
+
+.toggle-marker {
+  display: inline-block;
+  width: 18px;
+  color: #637069;
+  font-weight: bold;
+}
+
+.match-details {
+  display: none;
+}
+
+.match-details.is-open {
+  display: table-row;
+}
+
+.match-details td {
+  background: #fbfdfb;
+}
+
+.prediction-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.prediction-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #e6eee8;
+  border-radius: 6px;
+  background: #fff;
+}
+
 h3 {
   margin-bottom: 10px;
   font-size: 16px;
@@ -279,6 +323,19 @@ code {
     border-bottom: 1px solid #e6eee8;
   }
 
+  #matches tr.match-details {
+    display: none;
+    padding: 0;
+  }
+
+  #matches tr.match-details.is-open {
+    display: block;
+  }
+
+  #matches tr.match-details td {
+    padding: 0 0 12px;
+  }
+
   #matches td {
     padding: 0;
     border-bottom: 0;
@@ -288,6 +345,10 @@ code {
   #matches td:nth-child(1) {
     font-weight: bold;
     line-height: 1.25;
+  }
+
+  .prediction-grid {
+    grid-template-columns: 1fr;
   }
 
   #matches td:nth-child(2),
