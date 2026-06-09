@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>World Cup Predictions</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>World Cup Predictions</h1>
+        <p>Scores and standings from <code>input.xlsx</code>.</p>
+      </header>
+
+      <section>
+        <h2>Leaderboard</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Player</th>
+              <th>Points</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard"></tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Progress Per Game</h2>
+        <canvas id="progressChart" width="1000" height="420"></canvas>
+        <div id="chartLegend" class="chart-legend"></div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Fun Stats</h2>
+          <select id="statPicker" aria-label="Choose stat">
+            <option value="lastFive">Last 5 games</option>
+            <option value="groups">By group</option>
+            <option value="rounds">By round</option>
+            <option value="bestCountries">Best countries</option>
+            <option value="worstCountries">Worst countries</option>
+            <option value="exactScores">Exact scores</option>
+            <option value="winner">Winner predictions</option>
+            <option value="bestGames">Best single game</option>
+            <option value="hardestGames">Hardest games</option>
+          </select>
+        </div>
+        <div id="statPanel"></div>
+      </section>
+
+      <section>
+        <h2>Scores</h2>
+        <table>
+          <thead>
+            <tr id="matchHead"></tr>
+          </thead>
+          <tbody id="matches"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
