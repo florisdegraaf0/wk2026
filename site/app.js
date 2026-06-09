@@ -162,7 +162,7 @@ function renderMatches(data) {
                 <div class="prediction-card">
                   <b>${player}</b>
                   <span>${match.predictions?.[player] || "-"}</span>
-                  <span class="score-chip ${pointClass(match.points[player], Boolean(match.score))}">${match.points[player]} pts</span>
+                  <span>${match.points[player]} pts</span>
                 </div>
               `).join("")}
             </div>
