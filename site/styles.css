@@ -78,6 +78,30 @@ h3 {
   font-weight: bold;
 }
 
+.stat-note {
+  max-width: 720px;
+  margin-bottom: 14px;
+  color: #637069;
+  line-height: 1.45;
+}
+
+.stat-table {
+  table-layout: fixed;
+}
+
+.stat-table th:first-child,
+.stat-table td:first-child {
+  width: auto;
+}
+
+.stat-table th:nth-child(2),
+.stat-table td:nth-child(2),
+.stat-table th:nth-child(3),
+.stat-table td:nth-child(3) {
+  width: 120px;
+  text-align: right;
+}
+
 th,
 td {
   padding: 10px;

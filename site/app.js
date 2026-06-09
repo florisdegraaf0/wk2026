@@ -107,6 +107,21 @@ function simpleTable(headings, rows, keys) {
   `;
 }
 
+function statTable(headings, rows, keys) {
+  return `
+    <table class="stat-table">
+      <thead>
+        <tr>${headings.map((heading) => `<th>${heading}</th>`).join("")}</tr>
+      </thead>
+      <tbody>
+        ${rows.map((row) => `
+          <tr>${keys.map((key) => `<td>${row[key]}</td>`).join("")}</tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
 function renderLeaderboard(data) {
   renderPlayerRows("#leaderboard", data.leaderboard);
 }
@@ -451,10 +466,11 @@ function renderSelectedStat(data) {
     const underrated = [...surpriseRows].sort((a, b) => a.score - b.score || a.country.localeCompare(b.country)).slice(0, 8);
     const overrated = [...surpriseRows].sort((a, b) => b.score - a.score || a.country.localeCompare(b.country)).slice(0, 8);
     html = `
+      <p class="stat-note">This compares what everyone predicted for each country with what actually happened. Negative means the country did better than expected. Positive means people expected too much.</p>
       <div class="mini-heading">Most underrated</div>
-      ${simpleTable(["Country", "Surprise", "Predictions"], underrated, ["country", "score", "predictions"])}
+      ${statTable(["Country", "Rating gap", "Predictions"], underrated, ["country", "score", "predictions"])}
       <div class="mini-heading">Most overrated</div>
-      ${simpleTable(["Country", "Gap", "Predictions"], overrated, ["country", "score", "predictions"])}
+      ${statTable(["Country", "Rating gap", "Predictions"], overrated, ["country", "score", "predictions"])}
     `;
   }
   if (selected === "exactScores") {
