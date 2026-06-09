@@ -1,10 +1,16 @@
 {
-  "generatedAt": "2026-06-09T11:47:34",
+  "generatedAt": "2026-06-09T12:37:15",
   "source": "Google Sheets",
   "players": [
     "Wiebe",
     "Heleen",
-    "Floris"
+    "Floris",
+    "Renske",
+    "Remo",
+    "Xavi",
+    "Manuel",
+    "Shino",
+    "Toma"
   ],
   "matches": [
     {
@@ -18,7 +24,24 @@
       "points": {
         "Wiebe": 2,
         "Heleen": 0,
-        "Floris": 2
+        "Floris": 2,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "2-0",
+        "Heleen": "0-1",
+        "Floris": "2-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -32,7 +55,24 @@
       "points": {
         "Wiebe": 5,
         "Heleen": 0,
-        "Floris": 10
+        "Floris": 10,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "3-1",
+        "Heleen": "0-2",
+        "Floris": "2-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -46,7 +86,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 10
+        "Floris": 10,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "2-0",
+        "Heleen": "0-3",
+        "Floris": "1-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -60,7 +117,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "2-0",
+        "Heleen": "2-1",
+        "Floris": "2-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -74,7 +148,24 @@
       "points": {
         "Wiebe": 7,
         "Heleen": 2,
-        "Floris": 7
+        "Floris": 7,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "0-3",
+        "Heleen": "1-1",
+        "Floris": "0-3",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -88,7 +179,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "2-1",
+        "Heleen": "4-1",
+        "Floris": "0-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -102,7 +210,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "0-2",
+        "Heleen": "0-4",
+        "Floris": "3-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -116,7 +241,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "1-2",
+        "Heleen": "2-3",
+        "Floris": "0-3",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -130,7 +272,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "4-1",
+        "Heleen": "5-0",
+        "Floris": "5-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -144,7 +303,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "2-0",
+        "Heleen": "2-1",
+        "Floris": "1-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -158,7 +334,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "0-2",
+        "Heleen": "1-1",
+        "Floris": "1-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -172,7 +365,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "2-1",
+        "Heleen": "1-3",
+        "Floris": "0-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -186,7 +396,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "5-0",
+        "Heleen": "5-1",
+        "Floris": "5-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -200,7 +427,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "3-0",
+        "Heleen": "3-0",
+        "Floris": "1-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -214,7 +458,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "1-3",
+        "Heleen": "2-2",
+        "Floris": "0-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -228,7 +489,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "1-2",
+        "Heleen": "0-3",
+        "Floris": "0-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -242,7 +520,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "3-1",
+        "Heleen": "6-0",
+        "Floris": "3-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -256,7 +551,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "0-3",
+        "Heleen": "0-2",
+        "Floris": "0-3",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -270,7 +582,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "3-0",
+        "Heleen": "5-1",
+        "Floris": "3-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -284,7 +613,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "2-1",
+        "Heleen": "1-1",
+        "Floris": "2-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -298,7 +644,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "4-0",
+        "Heleen": "6-0",
+        "Floris": "3-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -312,7 +675,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "3-1",
+        "Heleen": "2-1",
+        "Floris": "1-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -326,7 +706,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "2-1",
+        "Heleen": "2-2",
+        "Floris": "1-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -340,7 +737,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "0-3",
+        "Heleen": "2-1",
+        "Floris": "0-3",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -354,7 +768,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "0-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -368,7 +799,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -382,7 +830,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -396,7 +861,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "2-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -410,7 +892,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -424,7 +923,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -438,7 +954,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "3-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -452,7 +985,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -466,7 +1016,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "0-3",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -480,7 +1047,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "2-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -494,7 +1078,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "3-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -508,7 +1109,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "2-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -522,7 +1140,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "4-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -536,7 +1171,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "2-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -550,7 +1202,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "3-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -564,7 +1233,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "0-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -578,7 +1264,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "3-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -592,7 +1295,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "4-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -606,7 +1326,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "2-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -620,7 +1357,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -634,7 +1388,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "3-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -648,7 +1419,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "2-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -662,7 +1450,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "0-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -676,7 +1481,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "2-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -690,7 +1512,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "2-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -704,7 +1543,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -718,7 +1574,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "2-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -732,7 +1605,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-3",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -746,7 +1636,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -760,7 +1667,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -774,7 +1698,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -788,7 +1729,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "0-3",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -802,7 +1760,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "2-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -816,7 +1791,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -830,7 +1822,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "2-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -844,7 +1853,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "0-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -858,7 +1884,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -872,7 +1915,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -886,7 +1946,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-1",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -900,7 +1977,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "0-3",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -914,7 +2008,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "0-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -928,7 +2039,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -942,7 +2070,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "0-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -956,7 +2101,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "2-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -970,7 +2132,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -984,7 +2163,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "0-0",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -998,7 +2194,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "1-2",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     },
     {
@@ -1012,7 +2225,24 @@
       "points": {
         "Wiebe": 0,
         "Heleen": 0,
-        "Floris": 0
+        "Floris": 0,
+        "Renske": 0,
+        "Remo": 0,
+        "Xavi": 0,
+        "Manuel": 0,
+        "Shino": 0,
+        "Toma": 0
+      },
+      "predictions": {
+        "Wiebe": "",
+        "Heleen": "",
+        "Floris": "0-4",
+        "Renske": "",
+        "Remo": "",
+        "Xavi": "",
+        "Manuel": "",
+        "Shino": "",
+        "Toma": ""
       }
     }
   ],
@@ -1030,6 +2260,30 @@
       },
       "Floris": {
         "winner": "Spanje",
+        "points": 0
+      },
+      "Renske": {
+        "winner": "",
+        "points": 0
+      },
+      "Remo": {
+        "winner": "",
+        "points": 0
+      },
+      "Xavi": {
+        "winner": "",
+        "points": 0
+      },
+      "Manuel": {
+        "winner": "",
+        "points": 0
+      },
+      "Shino": {
+        "winner": "",
+        "points": 0
+      },
+      "Toma": {
+        "winner": "",
         "points": 0
       }
     }
@@ -1051,6 +2305,42 @@
       "player": "Heleen",
       "points": 2,
       "matchPoints": 2,
+      "winnerPoints": 0
+    },
+    {
+      "player": "Manuel",
+      "points": 0,
+      "matchPoints": 0,
+      "winnerPoints": 0
+    },
+    {
+      "player": "Remo",
+      "points": 0,
+      "matchPoints": 0,
+      "winnerPoints": 0
+    },
+    {
+      "player": "Renske",
+      "points": 0,
+      "matchPoints": 0,
+      "winnerPoints": 0
+    },
+    {
+      "player": "Shino",
+      "points": 0,
+      "matchPoints": 0,
+      "winnerPoints": 0
+    },
+    {
+      "player": "Toma",
+      "points": 0,
+      "matchPoints": 0,
+      "winnerPoints": 0
+    },
+    {
+      "player": "Xavi",
+      "points": 0,
+      "matchPoints": 0,
       "winnerPoints": 0
     }
   ],
@@ -1209,6 +2499,450 @@
       22,
       22,
       29,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "Renske": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "Remo": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "Xavi": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "Manuel": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "Shino": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "Toma": [
+      0,
+      0,
+      0,
+      0,
+      0,
       null,
       null,
       null,

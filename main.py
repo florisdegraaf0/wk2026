@@ -136,6 +136,7 @@ def build_data():
             "round": format_value(row["Round"]),
             "score": score,
             "points": {},
+            "predictions": {},
         }
 
         for player in players:
@@ -144,6 +145,7 @@ def build_data():
             match_totals[player] += points
             progress[player].append(match_totals[player] if score else None)
             match["points"][player] = points
+            match["predictions"][player] = format_score(prediction)
 
         matches.append(match)
 

@@ -28,6 +28,19 @@ function chartValuesForPlayer(data, player) {
   return values;
 }
 
+function parseScore(score) {
+  if (!score) return null;
+  const match = String(score).trim().match(/^(\d+)\s*-\s*(\d+)$/);
+  if (!match) return null;
+  return [Number(match[1]), Number(match[2])];
+}
+
+function sideResultPoints(score, side) {
+  if (score[0] === score[1]) return 1;
+  const homeWon = score[0] > score[1];
+  return (side === "home" && homeWon) || (side === "away" && !homeWon) ? 3 : 0;
+}
+
 function rowsForMatches(data, matches) {
   return data.players
     .map((player) => ({
@@ -231,6 +244,49 @@ function countryRows(data) {
   return rows;
 }
 
+function countrySurpriseRows(data) {
+  const countries = new Map();
+
+  function ensureCountry(country) {
+    if (!countries.has(country)) {
+      countries.set(country, { country, gap: 0, predictions: 0 });
+    }
+    return countries.get(country);
+  }
+
+  data.matches.filter((match) => match.score).forEach((match) => {
+    const actual = parseScore(match.score);
+    if (!actual) return;
+
+    data.players.forEach((player) => {
+      const prediction = parseScore(match.predictions?.[player]);
+      if (!prediction) return;
+
+      [
+        { country: match.country1, side: "home", index: 0 },
+        { country: match.country2, side: "away", index: 1 },
+      ].forEach(({ country, side, index }) => {
+        const predictedResult = sideResultPoints(prediction, side);
+        const actualResult = sideResultPoints(actual, side);
+        const predictedGoals = prediction[index];
+        const actualGoals = actual[index];
+        const row = ensureCountry(country);
+
+        row.gap += (predictedResult - actualResult) * 2 + (predictedGoals - actualGoals);
+        row.predictions += 1;
+      });
+    });
+  });
+
+  return [...countries.values()]
+    .filter((row) => row.predictions)
+    .map((row) => ({
+      country: row.country,
+      score: Number((row.gap / row.predictions).toFixed(2)),
+      predictions: row.predictions,
+    }));
+}
+
 function exactRows(data) {
   return data.players
     .map((player) => ({
@@ -280,6 +336,17 @@ function renderSelectedStat(data) {
   }
   if (selected === "worstCountries") {
     html = simpleTable(["Country", "Points"], countries.slice(-10).reverse(), ["country", "points"]);
+  }
+  if (selected === "surpriseCountries") {
+    const surpriseRows = countrySurpriseRows(data);
+    const underrated = [...surpriseRows].sort((a, b) => a.score - b.score || a.country.localeCompare(b.country)).slice(0, 8);
+    const overrated = [...surpriseRows].sort((a, b) => b.score - a.score || a.country.localeCompare(b.country)).slice(0, 8);
+    html = `
+      <div class="mini-heading">Most underrated</div>
+      ${simpleTable(["Country", "Surprise", "Predictions"], underrated, ["country", "score", "predictions"])}
+      <div class="mini-heading">Most overrated</div>
+      ${simpleTable(["Country", "Gap", "Predictions"], overrated, ["country", "score", "predictions"])}
+    `;
   }
   if (selected === "exactScores") {
     html = simpleTable(["Player", "Exact"], exactRows(data), ["player", "exact"]);
