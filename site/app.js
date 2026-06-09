@@ -527,17 +527,21 @@ function hotStreakRows(data) {
   return data.players
     .map((player) => {
       let best = { points: 0, start: 0, end: 0 };
+      let current = { points: 0, start: 0 };
       const playedMatches = data.matches.filter((match) => match.score);
 
-      for (let start = 0; start < playedMatches.length; start += 1) {
-        let total = 0;
-        for (let end = start; end < playedMatches.length; end += 1) {
-          total += playedMatches[end].points[player];
-          if (total > best.points) {
-            best = { points: total, start, end };
-          }
+      playedMatches.forEach((match, index) => {
+        const points = match.points[player];
+        if (points <= 0) {
+          current = { points: 0, start: index + 1 };
+          return;
         }
-      }
+
+        current.points += points;
+        if (current.points > best.points) {
+          best = { points: current.points, start: current.start, end: index };
+        }
+      });
 
       const startMatch = playedMatches[best.start];
       const endMatch = playedMatches[best.end];
@@ -599,7 +603,7 @@ function renderSelectedStat(data) {
   }
   if (selected === "hotStreaks") {
     html = `
-      <p class="stat-note">Best scoring run over consecutive played games. A streak can be short or long; it keeps growing as long as the total run is the player's best.</p>
+      <p class="stat-note">Best run of consecutive played games with points. A game with 0 points ends the streak.</p>
       ${simpleTable(["Player", "Points", "Games"], hotStreakRows(data), ["player", "points", "games"])}
     `;
   }
