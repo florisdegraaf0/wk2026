@@ -11,7 +11,7 @@ import pandas as pd
 
 ROOT = Path(__file__).parent
 INPUT_FILE = ROOT / "input.xlsx"
-OUTPUT_FILE = ROOT / "site" / "data.json"
+OUTPUT_FILE = ROOT / "data.json"
 WINNER_POINTS = 50
 GOOGLE_SHEET_ID = os.environ.get("GOOGLE_SHEET_ID", "1fozCeduyiHd2W66pqQHGKjAPH5zBtczB24yjBeGOyK8")
 GOOGLE_SHEET_EXPORT_URL = f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}/export?format=xlsx"
