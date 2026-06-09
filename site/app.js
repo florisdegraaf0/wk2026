@@ -126,9 +126,53 @@ function renderLeaderboard(data) {
   renderPlayerRows("#leaderboard", data.leaderboard);
 }
 
+function matchDateTimeLabel(match) {
+  if (!match.date && !match.time) return "-";
+  const date = match.date || "";
+  const time = match.time || "";
+  return `${date} ${time}`.trim();
+}
+
+function matchTimestamp(match) {
+  if (!match.date) return Number.MAX_SAFE_INTEGER;
+  const value = Date.parse(`${match.date}T${match.time || "00:00"}`);
+  return Number.isNaN(value) ? Number.MAX_SAFE_INTEGER : value;
+}
+
+function renderNextGame(data) {
+  const next = data.matches
+    .filter((match) => !match.score)
+    .sort((a, b) => matchTimestamp(a) - matchTimestamp(b) || a.id - b.id)[0];
+
+  const section = document.querySelector("#nextGameSection");
+  if (!next) {
+    section.style.display = "none";
+    return;
+  }
+
+  section.style.display = "";
+  document.querySelector("#nextGame").innerHTML = `
+    <div class="next-game-card">
+      <div>
+        <div class="next-game-meta">${matchDateTimeLabel(next)} · Group ${next.group} · Round ${next.round}</div>
+        <h3>${next.label}</h3>
+      </div>
+      <div class="prediction-grid">
+        ${data.players.map((player) => `
+          <div class="prediction-card">
+            <b>${player}</b>
+            <span>${next.predictions?.[player] || "-"}</span>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
 function renderMatches(data) {
   document.querySelector("#matchHead").innerHTML = `
     <th>Game</th>
+    <th>Date/time</th>
     <th>Group</th>
     <th>Round</th>
     <th>Score</th>
@@ -143,6 +187,7 @@ function renderMatches(data) {
       return `
         <tr class="match-summary" data-match-id="${match.id}" tabindex="0" aria-expanded="false">
           <td><span class="toggle-marker">+</span>${match.id}. ${match.label}</td>
+          <td>${matchDateTimeLabel(match)}</td>
           <td>${match.group}</td>
           <td>${match.round}</td>
           <td>${match.score || "-"}</td>
@@ -156,7 +201,7 @@ function renderMatches(data) {
           </td>
         </tr>
         <tr class="match-details" data-match-details="${match.id}">
-          <td colspan="5">
+          <td colspan="6">
             <div class="prediction-grid">
               ${data.players.map((player) => `
                 <div class="prediction-card">
@@ -576,6 +621,7 @@ fetch("data.json")
   .then((response) => response.json())
   .then((data) => {
     currentData = data;
+    renderNextGame(data);
     renderLeaderboard(data);
     renderMatches(data);
     drawChart(data);

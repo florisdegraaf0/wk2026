@@ -15,6 +15,7 @@ OUTPUT_FILE = ROOT / "site" / "data.json"
 WINNER_POINTS = 50
 GOOGLE_SHEET_ID = os.environ.get("GOOGLE_SHEET_ID", "1fozCeduyiHd2W66pqQHGKjAPH5zBtczB24yjBeGOyK8")
 GOOGLE_SHEET_EXPORT_URL = f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}/export?format=xlsx"
+MATCH_COLUMNS = {"Datum", "Tijd", "ID", "Country_1", "Country_2", "Group", "Round", "Score"}
 
 
 def parse_score(score):
@@ -41,6 +42,28 @@ def format_value(value):
     if isinstance(value, float) and value.is_integer():
         return str(int(value))
     return str(value).strip()
+
+
+def format_date(value):
+    if pd.isna(value):
+        return ""
+    try:
+        return pd.to_datetime(value).date().isoformat()
+    except (TypeError, ValueError):
+        return str(value).strip()
+
+
+def format_time(value):
+    if pd.isna(value):
+        return ""
+    if hasattr(value, "strftime"):
+        return value.strftime("%H:%M")
+    try:
+        return pd.to_datetime(value).strftime("%H:%M")
+    except (TypeError, ValueError):
+        text = str(value).strip()
+        match = re.match(r"^(\d{1,2}):(\d{2})", text)
+        return f"{int(match.group(1)):02d}:{match.group(2)}" if match else text
 
 
 def result_type(score):
@@ -114,7 +137,7 @@ def build_data():
     workbook = open_input_workbook()
     df = pd.read_excel(workbook, sheet_name="Blad1")
     df = df[df["ID"].notna() & df["Country_1"].notna() & df["Country_2"].notna()]
-    match_players = [str(column) for column in df.columns[6:] if not str(column).startswith("Unnamed")]
+    match_players = [str(column) for column in df.columns if str(column) not in MATCH_COLUMNS and not str(column).startswith("Unnamed")]
     actual_winner, winner_predictions = read_winner_predictions(workbook)
     players = list(match_players)
     for player in winner_predictions:
@@ -132,6 +155,8 @@ def build_data():
             "label": f"{row['Country_1']} - {row['Country_2']}",
             "country1": str(row["Country_1"]),
             "country2": str(row["Country_2"]),
+            "date": format_date(row["Datum"]) if "Datum" in df.columns else "",
+            "time": format_time(row["Tijd"]) if "Tijd" in df.columns else "",
             "group": format_value(row["Group"]),
             "round": format_value(row["Round"]),
             "score": score,

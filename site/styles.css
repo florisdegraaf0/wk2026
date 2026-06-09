@@ -68,6 +68,21 @@ table {
   font-size: 14px;
 }
 
+.next-game-card {
+  display: grid;
+  gap: 14px;
+}
+
+.next-game-card h3 {
+  margin: 4px 0 0;
+  font-size: 22px;
+}
+
+.next-game-meta {
+  color: #637069;
+  font-size: 14px;
+}
+
 .match-summary {
   cursor: pointer;
 }
@@ -351,12 +366,18 @@ code {
     grid-template-columns: 1fr;
   }
 
-  #matches td:nth-child(2),
-  #matches td:nth-child(3) {
+  #matches td:nth-child(2) {
+    margin-top: 3px;
+    color: #637069;
+    font-size: 12px;
+  }
+
+  #matches td:nth-child(3),
+  #matches td:nth-child(4) {
     display: none;
   }
 
-  #matches td:nth-child(4) {
+  #matches td:nth-child(5) {
     position: absolute;
     top: 12px;
     right: 0;
@@ -365,7 +386,7 @@ code {
     font-weight: bold;
   }
 
-  #matches td:nth-child(5) {
+  #matches td:nth-child(6) {
     margin-top: 6px;
   }
 
