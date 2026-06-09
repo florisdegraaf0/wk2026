@@ -100,6 +100,28 @@ canvas {
   background: #fff;
 }
 
+.chart-wrap {
+  position: relative;
+}
+
+.chart-tooltip {
+  display: none;
+  position: absolute;
+  z-index: 2;
+  padding: 6px 8px;
+  border-radius: 6px;
+  color: #fff;
+  background: rgba(23, 32, 27, 0.9);
+  font-size: 13px;
+  pointer-events: none;
+  white-space: nowrap;
+  transform: translate(10px, -100%);
+}
+
+.chart-tooltip.is-visible {
+  display: block;
+}
+
 .chart-legend,
 .points-list {
   display: flex;
@@ -120,6 +142,18 @@ canvas {
   border-radius: 999px;
   background: #eef6ef;
   white-space: nowrap;
+}
+
+.chart-legend span {
+  cursor: default;
+}
+
+.chart-legend span.is-muted {
+  opacity: 0.35;
+}
+
+.chart-legend span.is-active {
+  font-weight: bold;
 }
 
 .score-chip.score-10 {

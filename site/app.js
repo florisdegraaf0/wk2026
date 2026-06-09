@@ -1,5 +1,6 @@
 const colors = ["#0b7a45", "#c0362c", "#286b9a", "#c58a24", "#6f42c1", "#222222"];
 let currentData;
+let chartState;
 
 function sortValues(values) {
   return values.sort((a, b) => {
@@ -158,6 +159,39 @@ function drawChart(data) {
   const maxScore = Math.max(10, ...playedValues);
   const hasWinnerPoint = Boolean(data.winner?.actual);
   const pointCount = Math.max(1, Math.max(...Object.values(series).map((values) => values.length)));
+  const pointsByPlayer = {};
+
+  data.players.forEach((player) => {
+    pointsByPlayer[player] = series[player].map((value, index) => ({
+      value,
+      x: padding + (index / Math.max(1, pointCount - 1)) * chartWidth,
+      y: height - padding - (value / maxScore) * chartHeight,
+    }));
+  });
+
+  chartState = {
+    data,
+    padding,
+    pointCount,
+    series,
+    pointsByPlayer,
+    hoveredPlayer: chartState?.hoveredPlayer || null,
+  };
+  renderChart();
+  bindChartHover();
+}
+
+function renderChart() {
+  const canvas = document.querySelector("#progressChart");
+  const context = canvas.getContext("2d");
+  const tooltip = document.querySelector("#chartTooltip");
+  const { data, padding, pointCount, series, pointsByPlayer, hoveredPlayer } = chartState;
+  const width = canvas.width;
+  const height = canvas.height;
+  const playedCount = data.matches.filter((match) => match.score).length;
+  const playedValues = Object.values(series).flat();
+  const maxScore = Math.max(10, ...playedValues);
+  const hasWinnerPoint = Boolean(data.winner?.actual);
 
   context.clearRect(0, 0, width, height);
   context.strokeStyle = "#d8e2d9";
@@ -175,17 +209,16 @@ function drawChart(data) {
   context.fillText(hasWinnerPoint ? "Winner" : `Game ${playedCount}`, width - padding - 64, height - 16);
 
   data.players.forEach((player, playerIndex) => {
-    const values = series[player];
+    const points = pointsByPlayer[player];
     const color = colors[playerIndex % colors.length];
-    if (!values.length) return;
+    if (!points.length) return;
 
+    context.globalAlpha = hoveredPlayer && hoveredPlayer !== player ? 0.18 : 1;
     context.strokeStyle = color;
-    context.lineWidth = data.players.length > 5 ? 1.8 : 2.5;
+    context.lineWidth = hoveredPlayer === player ? 4.5 : data.players.length > 5 ? 1.8 : 2.5;
     context.beginPath();
 
-    values.forEach((value, index) => {
-      const x = padding + (index / Math.max(1, pointCount - 1)) * chartWidth;
-      const y = height - padding - (value / maxScore) * chartHeight;
+    points.forEach(({ x, y }, index) => {
       if (index === 0) {
         context.moveTo(x, y);
       } else {
@@ -195,12 +228,88 @@ function drawChart(data) {
 
     context.stroke();
   });
+  context.globalAlpha = 1;
 
   document.querySelector("#chartLegend").innerHTML = data.players.map((player, playerIndex) => {
     const values = series[player];
     const finalValue = values[values.length - 1] || 0;
-    return `<span><i style="background:${colors[playerIndex % colors.length]}"></i>${player}: ${finalValue}</span>`;
+    const stateClass = hoveredPlayer === player ? "is-active" : hoveredPlayer ? "is-muted" : "";
+    return `<span class="${stateClass}"><i style="background:${colors[playerIndex % colors.length]}"></i>${player}: ${finalValue}</span>`;
   }).join("");
+
+  if (!hoveredPlayer) {
+    tooltip.classList.remove("is-visible");
+  }
+}
+
+function distanceToSegment(point, start, end) {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  if (dx === 0 && dy === 0) {
+    return Math.hypot(point.x - start.x, point.y - start.y);
+  }
+  const t = Math.max(0, Math.min(1, ((point.x - start.x) * dx + (point.y - start.y) * dy) / (dx * dx + dy * dy)));
+  const x = start.x + t * dx;
+  const y = start.y + t * dy;
+  return Math.hypot(point.x - x, point.y - y);
+}
+
+function hoveredChartPlayer(canvasPoint) {
+  let best = { player: null, distance: Infinity };
+
+  Object.entries(chartState.pointsByPlayer).forEach(([player, points]) => {
+    for (let index = 1; index < points.length; index += 1) {
+      const distance = distanceToSegment(canvasPoint, points[index - 1], points[index]);
+      if (distance < best.distance) {
+        best = { player, distance };
+      }
+    }
+  });
+
+  return best.distance <= 14 ? best.player : null;
+}
+
+function bindChartHover() {
+  const canvas = document.querySelector("#progressChart");
+  if (canvas.dataset.hoverBound) return;
+  canvas.dataset.hoverBound = "true";
+
+  canvas.addEventListener("mousemove", (event) => {
+    if (!chartState) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const canvasPoint = {
+      x: (event.clientX - rect.left) * scaleX,
+      y: (event.clientY - rect.top) * scaleY,
+    };
+    const player = hoveredChartPlayer(canvasPoint);
+
+    chartState.hoveredPlayer = player;
+    renderChart();
+
+    const tooltip = document.querySelector("#chartTooltip");
+    if (player) {
+      const values = chartState.series[player];
+      tooltip.textContent = `${player}: ${values[values.length - 1] || 0}`;
+      tooltip.style.left = `${event.clientX - rect.left}px`;
+      tooltip.style.top = `${event.clientY - rect.top}px`;
+      tooltip.classList.add("is-visible");
+      canvas.style.cursor = "pointer";
+    } else {
+      tooltip.classList.remove("is-visible");
+      canvas.style.cursor = "default";
+    }
+  });
+
+  canvas.addEventListener("mouseleave", () => {
+    if (!chartState) return;
+    chartState.hoveredPlayer = null;
+    document.querySelector("#chartTooltip").classList.remove("is-visible");
+    canvas.style.cursor = "default";
+    renderChart();
+  });
 }
 
 function groupedLeaderboards(data, field, label) {
