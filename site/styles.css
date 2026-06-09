@@ -178,21 +178,51 @@ code {
     margin-top: 8px;
   }
 
-  #matches th:nth-child(2),
+  #matchHead {
+    display: none;
+  }
+
+  #matches,
+  #matches tbody,
+  #matches tr,
+  #matches td {
+    display: block;
+    width: 100%;
+  }
+
+  #matches tr {
+    position: relative;
+    padding: 12px 82px 12px 0;
+    border-bottom: 1px solid #e6eee8;
+  }
+
+  #matches td {
+    padding: 0;
+    border-bottom: 0;
+    text-align: left;
+  }
+
+  #matches td:nth-child(1) {
+    font-weight: bold;
+    line-height: 1.25;
+  }
+
   #matches td:nth-child(2),
-  #matches th:nth-child(3),
   #matches td:nth-child(3) {
     display: none;
   }
 
-  #matches th,
-  #matches td {
-    padding: 9px 6px;
+  #matches td:nth-child(4) {
+    position: absolute;
+    top: 12px;
+    right: 0;
+    width: 66px;
+    text-align: right;
+    font-weight: bold;
   }
 
-  #matches th:nth-child(5),
   #matches td:nth-child(5) {
-    text-align: right;
+    margin-top: 6px;
   }
 
   #matches .points-list {
@@ -203,6 +233,6 @@ code {
     display: block;
     color: #637069;
     font-size: 12px;
-    white-space: nowrap;
+    white-space: normal;
   }
 }
