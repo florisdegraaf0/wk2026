@@ -617,8 +617,12 @@ function renderSelectedStat(data) {
   document.querySelector("#statPanel").innerHTML = html;
 }
 
-fetch("data.json")
-  .then((response) => response.json())
+fetch("/api/data")
+  .then((response) => {
+    if (!response.ok) throw new Error("Live data failed");
+    return response.json();
+  })
+  .catch(() => fetch("data.json").then((response) => response.json()))
   .then((data) => {
     currentData = data;
     renderNextGame(data);
