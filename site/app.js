@@ -249,7 +249,7 @@ function renderChart() {
     const values = series[player];
     const finalValue = values[values.length - 1] || 0;
     const stateClass = hoveredPlayer === player ? "is-active" : hoveredPlayer ? "is-muted" : "";
-    return `<span class="${stateClass}"><i style="background:${colors[playerIndex % colors.length]}"></i>${player}: ${finalValue}</span>`;
+    return `<span class="${stateClass}" data-chart-player="${player}"><i style="background:${colors[playerIndex % colors.length]}"></i>${player}: ${finalValue}</span>`;
   }).join("");
 
   if (!hoveredPlayer) {
@@ -286,6 +286,7 @@ function hoveredChartPlayer(canvasPoint) {
 
 function bindChartHover() {
   const canvas = document.querySelector("#progressChart");
+  const legend = document.querySelector("#chartLegend");
   if (canvas.dataset.hoverBound) return;
   canvas.dataset.hoverBound = "true";
 
@@ -323,6 +324,19 @@ function bindChartHover() {
     chartState.hoveredPlayer = null;
     document.querySelector("#chartTooltip").classList.remove("is-visible");
     canvas.style.cursor = "default";
+    renderChart();
+  });
+
+  legend.addEventListener("mouseover", (event) => {
+    const label = event.target.closest("[data-chart-player]");
+    if (!label || !chartState) return;
+    chartState.hoveredPlayer = label.dataset.chartPlayer;
+    renderChart();
+  });
+
+  legend.addEventListener("mouseout", (event) => {
+    if (!chartState || event.relatedTarget?.closest?.("[data-chart-player]")) return;
+    chartState.hoveredPlayer = null;
     renderChart();
   });
 }

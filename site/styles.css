@@ -169,7 +169,7 @@ canvas {
 }
 
 .chart-legend span {
-  cursor: default;
+  cursor: pointer;
 }
 
 .chart-legend span.is-muted {
