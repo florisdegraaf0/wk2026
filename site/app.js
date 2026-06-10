@@ -52,11 +52,23 @@ function rowsForMatches(data, matches) {
     .sort((a, b) => b.points - a.points || a.player.localeCompare(b.player));
 }
 
+function rowsWithRanks(rows) {
+  let previousPoints = null;
+  let previousRank = 0;
+
+  return rows.map((row, index) => {
+    const rank = row.points === previousPoints ? previousRank : index + 1;
+    previousPoints = row.points;
+    previousRank = rank;
+    return { ...row, rank };
+  });
+}
+
 function renderPlayerRows(target, rows) {
-  document.querySelector(target).innerHTML = rows
-    .map((row, index) => `
+  document.querySelector(target).innerHTML = rowsWithRanks(rows)
+    .map((row) => `
       <tr>
-        <td>${index + 1}</td>
+        <td>${row.rank}</td>
         <td>
           <span class="player-cell">
             ${row.player}
@@ -86,9 +98,9 @@ function playerTable(rows) {
         <tr><th>#</th><th>Player</th><th>Points</th></tr>
       </thead>
       <tbody>
-        ${rows.map((row, index) => `
+        ${rowsWithRanks(rows).map((row) => `
           <tr>
-            <td>${index + 1}</td>
+            <td>${row.rank}</td>
             <td>${row.player}</td>
             <td><strong>${row.points}</strong></td>
           </tr>
@@ -135,7 +147,7 @@ function latestPlayedMatch(data) {
 }
 
 function rankMap(rows) {
-  return Object.fromEntries(rows.map((row, index) => [row.player, index + 1]));
+  return Object.fromEntries(rowsWithRanks(rows).map((row) => [row.player, row.rank]));
 }
 
 function leaderboardMovement(data) {
