@@ -212,8 +212,8 @@ function predictionConsensusRows(data) {
 
     const consensus = [...counts.entries()]
       .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
-    const consensusScore = consensus?.[0] || "-";
-    const consensusCount = consensus?.[1] || 0;
+    const consensusScore = consensus?.[1] > 1 ? consensus[0] : "";
+    const consensusCount = consensusScore ? consensus[1] : 0;
     const against = predictions
       .filter((row) => row.prediction !== consensusScore)
       .map((row) => `${row.player} (${row.prediction})`);
@@ -221,8 +221,8 @@ function predictionConsensusRows(data) {
     return {
       game: `${match.id}. ${match.label}`,
       date: matchDateTimeLabel(match),
-      consensus: consensusCount ? `${consensusScore} (${consensusCount}/${data.players.length})` : "-",
-      against: against.length ? against.join(", ") : "Nobody",
+      consensus: consensusCount ? `${consensusScore} (${consensusCount}/${data.players.length})` : "No consensus",
+      against: consensusCount ? (against.length ? against.join(", ") : "Nobody") : predictions.map((row) => `${row.player} (${row.prediction})`).join(", "),
     };
   });
 }
@@ -231,7 +231,7 @@ function predictionConsensusTable(rows) {
   if (!rows.length) return "<p class=\"stat-note\">No upcoming matches.</p>";
   return `
     <div class="consensus-list">
-      ${rows.map((row) => `
+      ${rows.slice(0, 5).map((row) => `
         <article class="consensus-card">
           <div>
             <div class="next-game-meta">${row.date}</div>
