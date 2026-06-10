@@ -30,6 +30,16 @@ function chartValuesForPlayer(data, player) {
   return values;
 }
 
+function niceChartMax(value) {
+  return Math.max(10, Math.ceil(value / 10) * 10);
+}
+
+function chartXLabel(index, pointCount, playedCount, hasWinnerPoint) {
+  if (index === 0) return "Game 1";
+  if (hasWinnerPoint && index === pointCount - 1) return "Winner";
+  return `Game ${Math.min(index + 1, playedCount)}`;
+}
+
 function parseScore(score) {
   if (!score) return null;
   const match = String(score).trim().match(/^(\d+)\s*-\s*(\d+)$/);
@@ -443,13 +453,13 @@ function drawChart(data) {
   const context = canvas.getContext("2d");
   const width = canvas.width;
   const height = canvas.height;
-  const padding = 48;
-  const chartWidth = width - padding * 2;
-  const chartHeight = height - padding * 2;
+  const padding = { top: 30, right: 78, bottom: 58, left: 68 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
   const playedCount = data.matches.filter((match) => match.score).length;
   const series = Object.fromEntries(data.players.map((player) => [player, chartValuesForPlayer(data, player)]));
   const playedValues = Object.values(series).flat();
-  const maxScore = Math.max(10, ...playedValues);
+  const maxScore = niceChartMax(Math.max(10, ...playedValues));
   const hasWinnerPoint = Boolean(data.winner?.actual);
   const pointCount = Math.max(1, Math.max(...Object.values(series).map((values) => values.length)));
   const pointsByPlayer = {};
@@ -457,14 +467,19 @@ function drawChart(data) {
   data.players.forEach((player) => {
     pointsByPlayer[player] = series[player].map((value, index) => ({
       value,
-      x: padding + (index / Math.max(1, pointCount - 1)) * chartWidth,
-      y: height - padding - (value / maxScore) * chartHeight,
+      x: padding.left + (index / Math.max(1, pointCount - 1)) * chartWidth,
+      y: height - padding.bottom - (value / maxScore) * chartHeight,
     }));
   });
 
   chartState = {
     data,
     padding,
+    chartWidth,
+    chartHeight,
+    maxScore,
+    playedCount,
+    hasWinnerPoint,
     pointCount,
     series,
     pointsByPlayer,
@@ -478,28 +493,64 @@ function renderChart() {
   const canvas = document.querySelector("#progressChart");
   const context = canvas.getContext("2d");
   const tooltip = document.querySelector("#chartTooltip");
-  const { data, padding, pointCount, series, pointsByPlayer, hoveredPlayer } = chartState;
+  const { data, padding, chartWidth, chartHeight, maxScore, playedCount, hasWinnerPoint, pointCount, series, pointsByPlayer, hoveredPlayer } = chartState;
   const width = canvas.width;
   const height = canvas.height;
-  const playedCount = data.matches.filter((match) => match.score).length;
-  const playedValues = Object.values(series).flat();
-  const maxScore = Math.max(10, ...playedValues);
-  const hasWinnerPoint = Boolean(data.winner?.actual);
+  const plotBottom = height - padding.bottom;
+  const plotRight = width - padding.right;
+  const plotTop = padding.top;
 
   context.clearRect(0, 0, width, height);
-  context.strokeStyle = "#d8e2d9";
+
+  context.font = "13px Arial";
+  context.textBaseline = "middle";
+  context.lineWidth = 1;
+  context.strokeStyle = "#edf2ee";
+  context.fillStyle = "#637069";
+
+  for (let tick = 0; tick <= 5; tick += 1) {
+    const value = Math.round((maxScore / 5) * tick);
+    const y = plotBottom - (value / maxScore) * chartHeight;
+    context.beginPath();
+    context.moveTo(padding.left, y);
+    context.lineTo(plotRight, y);
+    context.stroke();
+    context.textAlign = "right";
+    context.fillText(String(value), padding.left - 12, y);
+  }
+
+  const xTicks = [...new Set([0, Math.floor((pointCount - 1) / 2), pointCount - 1])].filter((tick) => tick >= 0);
+  xTicks.forEach((tick) => {
+    const x = padding.left + (tick / Math.max(1, pointCount - 1)) * chartWidth;
+    context.strokeStyle = "#f4f7f5";
+    context.beginPath();
+    context.moveTo(x, plotTop);
+    context.lineTo(x, plotBottom);
+    context.stroke();
+    context.fillStyle = "#637069";
+    context.textAlign = tick === 0 ? "left" : tick === pointCount - 1 ? "right" : "center";
+    context.textBaseline = "top";
+    context.fillText(chartXLabel(tick, pointCount, playedCount, hasWinnerPoint), x, plotBottom + 16);
+  });
+
+  context.strokeStyle = "#c7d6ca";
   context.lineWidth = 1;
   context.beginPath();
-  context.moveTo(padding, padding);
-  context.lineTo(padding, height - padding);
-  context.lineTo(width - padding, height - padding);
+  context.moveTo(padding.left, plotTop);
+  context.lineTo(padding.left, plotBottom);
+  context.lineTo(plotRight, plotBottom);
   context.stroke();
 
   context.fillStyle = "#637069";
-  context.font = "14px Arial";
-  context.fillText("0", 16, height - padding + 4);
-  context.fillText(String(maxScore), 12, padding + 4);
-  context.fillText(hasWinnerPoint ? "Winner" : `Game ${playedCount}`, width - padding - 64, height - 16);
+  context.font = "bold 13px Arial";
+  context.textAlign = "center";
+  context.textBaseline = "bottom";
+  context.fillText("Progress by game", padding.left + chartWidth / 2, height - 8);
+  context.save();
+  context.translate(18, padding.top + chartHeight / 2);
+  context.rotate(-Math.PI / 2);
+  context.fillText("Total points", 0, 0);
+  context.restore();
 
   data.players.forEach((player, playerIndex) => {
     const points = pointsByPlayer[player];
@@ -520,6 +571,19 @@ function renderChart() {
     });
 
     context.stroke();
+
+    const lastPoint = points[points.length - 1];
+    context.fillStyle = color;
+    context.beginPath();
+    context.arc(lastPoint.x, lastPoint.y, hoveredPlayer === player ? 5 : 3.5, 0, Math.PI * 2);
+    context.fill();
+
+    if (hoveredPlayer === player) {
+      context.font = "bold 13px Arial";
+      context.textAlign = "left";
+      context.textBaseline = "middle";
+      context.fillText(`${player} ${lastPoint.value}`, Math.min(lastPoint.x + 8, width - padding.right + 4), lastPoint.y);
+    }
   });
   context.globalAlpha = 1;
 

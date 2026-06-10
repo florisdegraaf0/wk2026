@@ -332,8 +332,8 @@ canvas {
   display: block;
   width: 100%;
   height: auto;
-  border: 1px solid #e6eee8;
-  border-radius: 6px;
+  border: 1px solid #d8e2d9;
+  border-radius: 8px;
   background: #fff;
 }
 
@@ -383,14 +383,18 @@ canvas {
 
 .chart-legend span {
   cursor: pointer;
+  border: 1px solid transparent;
+  transition: opacity 140ms ease, border-color 140ms ease, background 140ms ease;
 }
 
 .chart-legend span.is-muted {
-  opacity: 0.35;
+  opacity: 0.28;
 }
 
 .chart-legend span.is-active {
   font-weight: bold;
+  border-color: #b8ccbd;
+  background: #fff;
 }
 
 .score-chip.score-10 {
