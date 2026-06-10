@@ -57,7 +57,12 @@ function renderPlayerRows(target, rows) {
     .map((row, index) => `
       <tr>
         <td>${index + 1}</td>
-        <td>${row.player}</td>
+        <td>
+          <span class="player-cell">
+            ${row.player}
+            ${movementBadge(row.movement)}
+          </span>
+        </td>
         <td><strong>${row.points}</strong></td>
       </tr>
     `)
@@ -123,8 +128,136 @@ function statTable(headings, rows, keys) {
   `;
 }
 
+function latestPlayedMatch(data) {
+  return [...data.matches]
+    .filter((match) => match.score)
+    .sort((a, b) => matchTimestamp(b) - matchTimestamp(a) || b.id - a.id)[0];
+}
+
+function rankMap(rows) {
+  return Object.fromEntries(rows.map((row, index) => [row.player, index + 1]));
+}
+
+function leaderboardMovement(data) {
+  const latest = latestPlayedMatch(data);
+  if (!latest) return { latest: null, byPlayer: {} };
+
+  const previousRows = data.leaderboard
+    .map((row) => ({
+      player: row.player,
+      points: row.points - (latest.points[row.player] || 0),
+    }))
+    .sort((a, b) => b.points - a.points || a.player.localeCompare(b.player));
+
+  const previousRanks = rankMap(previousRows);
+  const currentRanks = rankMap(data.leaderboard);
+  const byPlayer = {};
+
+  data.players.forEach((player) => {
+    byPlayer[player] = {
+      movement: previousRanks[player] - currentRanks[player],
+      previousRank: previousRanks[player],
+      currentRank: currentRanks[player],
+      latestPoints: latest.points[player] || 0,
+    };
+  });
+
+  return { latest, byPlayer };
+}
+
+function movementBadge(movement) {
+  if (!movement) return "";
+  const direction = movement > 0 ? "up" : "down";
+  const label = movement > 0 ? `Up ${movement}` : `Down ${Math.abs(movement)}`;
+  const arrow = movement > 0 ? "▲" : "▼";
+  return `<span class="mover mover-${direction}" aria-label="${label}"><span aria-hidden="true">${arrow}</span>${Math.abs(movement)}</span>`;
+}
+
+function biggestMoverRows(data) {
+  const { latest, byPlayer } = leaderboardMovement(data);
+  if (!latest) return [];
+
+  return data.players
+    .map((player) => ({
+      player,
+      movement: byPlayer[player].movement,
+      change: movementBadge(byPlayer[player].movement),
+      fromTo: `${byPlayer[player].previousRank} → ${byPlayer[player].currentRank}`,
+      points: byPlayer[player].latestPoints,
+    }))
+    .filter((row) => row.movement !== 0)
+    .sort((a, b) => Math.abs(b.movement) - Math.abs(a.movement) || b.movement - a.movement || a.player.localeCompare(b.player));
+}
+
+function upcomingMatches(data) {
+  const now = Date.now();
+  return data.matches
+    .filter((match) => matchTimestamp(match) > now)
+    .sort((a, b) => matchTimestamp(a) - matchTimestamp(b) || a.id - b.id);
+}
+
+function predictionConsensusRows(data) {
+  return upcomingMatches(data).map((match) => {
+    const counts = new Map();
+    const predictions = data.players
+      .map((player) => ({
+        player,
+        prediction: match.predictions?.[player] || "",
+      }))
+      .filter((row) => row.prediction);
+
+    predictions.forEach((row) => {
+      counts.set(row.prediction, (counts.get(row.prediction) || 0) + 1);
+    });
+
+    const consensus = [...counts.entries()]
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
+    const consensusScore = consensus?.[0] || "-";
+    const consensusCount = consensus?.[1] || 0;
+    const against = predictions
+      .filter((row) => row.prediction !== consensusScore)
+      .map((row) => `${row.player} (${row.prediction})`);
+
+    return {
+      game: `${match.id}. ${match.label}`,
+      date: matchDateTimeLabel(match),
+      consensus: consensusCount ? `${consensusScore} (${consensusCount}/${data.players.length})` : "-",
+      against: against.length ? against.join(", ") : "Nobody",
+    };
+  });
+}
+
+function predictionConsensusTable(rows) {
+  if (!rows.length) return "<p class=\"stat-note\">No upcoming matches.</p>";
+  return `
+    <div class="consensus-list">
+      ${rows.map((row) => `
+        <article class="consensus-card">
+          <div>
+            <div class="next-game-meta">${row.date}</div>
+            <div class="mini-heading">${row.game}</div>
+          </div>
+          <div class="consensus-score">
+            <span>Consensus</span>
+            <b>${row.consensus}</b>
+          </div>
+          <div class="consensus-against">
+            <span>Against the group</span>
+            <p>${row.against}</p>
+          </div>
+        </article>
+      `).join("")}
+    </div>
+  `;
+}
+
 function renderLeaderboard(data) {
-  renderPlayerRows("#leaderboard", data.leaderboard);
+  const { byPlayer } = leaderboardMovement(data);
+  const rows = data.leaderboard.map((row) => ({
+    ...row,
+    movement: byPlayer[row.player]?.movement || 0,
+  }));
+  renderPlayerRows("#leaderboard", rows);
 }
 
 function matchDateTimeLabel(match) {
@@ -626,6 +759,22 @@ function renderSelectedStat(data) {
 
   if (selected === "lastFive") {
     html = playerTable(rowsForMatches(data, playedMatches.slice(-5)));
+  }
+  if (selected === "biggestMovers") {
+    const latest = latestPlayedMatch(data);
+    const rows = biggestMoverRows(data);
+    html = latest
+      ? `
+        <p class="stat-note">Rank changes after ${latest.id}. ${latest.label}. Positive points are from that match only.</p>
+        ${rows.length ? simpleTable(["Player", "Move", "From → To", "Points"], rows, ["player", "change", "fromTo", "points"]) : "<p class=\"stat-note\">No rank changes after the latest played match.</p>"}
+      `
+      : "<p class=\"stat-note\">No matches have been played yet.</p>";
+  }
+  if (selected === "predictionConsensus") {
+    html = `
+      <p class="stat-note">Most common predicted score for upcoming matches, plus everyone who picked something different.</p>
+      ${predictionConsensusTable(predictionConsensusRows(data))}
+    `;
   }
   if (selected === "groups") {
     html = groupedLeaderboards(data, "group", "Group");

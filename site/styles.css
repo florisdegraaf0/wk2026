@@ -64,6 +64,34 @@ table {
   border-collapse: collapse;
 }
 
+.player-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mover {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 34px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.mover-up {
+  color: #0b7a45;
+  background: #e5f4eb;
+}
+
+.mover-down {
+  color: #c0362c;
+  background: #fae8e6;
+}
+
 #matches {
   font-size: 14px;
 }
@@ -244,6 +272,49 @@ h3 {
   font-size: 14px;
 }
 
+.consensus-list {
+  display: grid;
+  gap: 10px;
+}
+
+.consensus-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px minmax(220px, 1fr);
+  gap: 14px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e6eee8;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.consensus-card .mini-heading {
+  margin: 3px 0 0;
+}
+
+.consensus-score,
+.consensus-against {
+  display: grid;
+  gap: 4px;
+}
+
+.consensus-score span,
+.consensus-against span {
+  color: #637069;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.consensus-score b {
+  font-size: 18px;
+}
+
+.consensus-against p {
+  margin: 0;
+  line-height: 1.35;
+}
+
 th,
 td {
   padding: 10px;
@@ -394,6 +465,11 @@ code {
     font-size: 19px;
   }
 
+  .consensus-card {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
   select {
     width: 100%;
     margin-top: 8px;
@@ -436,7 +512,7 @@ code {
     text-align: left;
   }
 
-  #matches td:nth-child(1) {
+  #matches tr.match-summary td:nth-child(1) {
     font-weight: bold;
     line-height: 1.25;
   }
@@ -445,18 +521,29 @@ code {
     grid-template-columns: 1fr;
   }
 
-  #matches td:nth-child(2) {
+  #matches tr.match-details .prediction-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 64px 48px;
+    align-items: center;
+    gap: 10px;
+  }
+
+  #matches tr.match-details .prediction-card span {
+    text-align: right;
+  }
+
+  #matches tr.match-summary td:nth-child(2) {
     margin-top: 3px;
     color: #637069;
     font-size: 12px;
   }
 
-  #matches td:nth-child(3),
-  #matches td:nth-child(4) {
+  #matches tr.match-summary td:nth-child(3),
+  #matches tr.match-summary td:nth-child(4) {
     display: none;
   }
 
-  #matches td:nth-child(5) {
+  #matches tr.match-summary td:nth-child(5) {
     position: absolute;
     top: 12px;
     right: 0;
@@ -465,7 +552,7 @@ code {
     font-weight: bold;
   }
 
-  #matches td:nth-child(6) {
+  #matches tr.match-summary td:nth-child(6) {
     margin-top: 6px;
   }
 
