@@ -230,8 +230,71 @@ h3 {
   line-height: 1.45;
 }
 
+.stat-control {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 520px;
+  margin-bottom: 10px;
+}
+
+.stat-control label {
+  min-width: 112px;
+  color: #17201b;
+  font-weight: 700;
+}
+
+.stat-control input[type="range"] {
+  flex: 1;
+  min-width: 160px;
+  accent-color: #0b7a45;
+}
+
 .stat-table {
   table-layout: fixed;
+}
+
+.movers-table {
+  table-layout: fixed;
+}
+
+.movers-table tbody tr {
+  animation: mover-row-in 360ms ease both;
+  animation-delay: var(--row-delay, 0ms);
+}
+
+.movers-table th:nth-child(2),
+.movers-table td:nth-child(2),
+.movers-table th:nth-child(3),
+.movers-table td:nth-child(3),
+.movers-table th:nth-child(4),
+.movers-table td:nth-child(4) {
+  width: 120px;
+}
+
+.movers-table th:nth-child(3),
+.movers-table td:nth-child(3),
+.movers-table th:nth-child(4),
+.movers-table td:nth-child(4) {
+  text-align: right;
+}
+
+@keyframes mover-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .movers-table tbody tr {
+    animation: none;
+  }
 }
 
 .stat-table th:first-child,
@@ -339,6 +402,17 @@ canvas {
 
 .chart-wrap {
   position: relative;
+}
+
+.chart-note {
+  margin: 8px 0 0;
+  color: #637069;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.chart-note[hidden] {
+  display: none;
 }
 
 .chart-tooltip {
@@ -475,6 +549,15 @@ code {
   }
 
   select {
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .stat-control {
+    display: block;
+  }
+
+  .stat-control input[type="range"] {
     width: 100%;
     margin-top: 8px;
   }

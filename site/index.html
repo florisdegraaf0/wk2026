@@ -33,11 +33,19 @@
       </section>
 
       <section>
-        <h2>Progress Per Game</h2>
+        <div class="section-head">
+          <h2>Progress Per Game</h2>
+          <select id="chartPicker" aria-label="Choose progress chart">
+            <option value="full">Full tournament</option>
+            <option value="lastFive">Last 5 games</option>
+            <option value="momentum">Momentum</option>
+          </select>
+        </div>
         <div class="chart-wrap">
           <canvas id="progressChart" width="1000" height="420"></canvas>
           <div id="chartTooltip" class="chart-tooltip"></div>
         </div>
+        <p id="chartNote" class="chart-note"></p>
         <div id="chartLegend" class="chart-legend"></div>
       </section>
 

@@ -2,6 +2,7 @@ const colors = ["#0b7a45", "#c0362c", "#286b9a", "#c58a24", "#6f42c1", "#222222"
 const matchTimeZoneOffset = "+02:00";
 let currentData;
 let chartState;
+let selectedChartType = "full";
 
 function sortValues(values) {
   return values.sort((a, b) => {
@@ -38,6 +39,94 @@ function chartXLabel(index, pointCount, playedCount, hasWinnerPoint) {
   if (index === 0) return "Game 1";
   if (hasWinnerPoint && index === pointCount - 1) return "Winner";
   return `Game ${Math.min(index + 1, playedCount)}`;
+}
+
+function playedProgressValuesForPlayer(data, player) {
+  return data.progress[player].filter((value) => value !== null);
+}
+
+function chartConfig(data, type) {
+  const playedCount = data.matches.filter((match) => match.score).length;
+  const hasWinnerPoint = Boolean(data.winner?.actual);
+
+  if (type === "lastFive") {
+    const series = Object.fromEntries(data.players.map((player) => {
+      const values = playedProgressValuesForPlayer(data, player);
+      return [player, values.slice(-5)];
+    }));
+    const firstGame = Math.max(1, playedCount - Math.max(0, Math.max(...Object.values(series).map((values) => values.length)) - 1));
+    const values = Object.values(series).flat();
+    const minValue = values.length ? Math.min(...values) : 0;
+    const maxValue = Math.max(10, ...values);
+    const yMin = minValue > 10 && maxValue - minValue <= maxValue * 0.55
+      ? Math.max(0, Math.floor((minValue - 5) / 5) * 5)
+      : 0;
+
+    return {
+      type,
+      series,
+      playedCount,
+      hasWinnerPoint: false,
+      maxScore: niceChartMax(maxValue),
+      minScore: yMin,
+      brokenAxis: yMin > 0,
+      xAxisTitle: "Last 5 games",
+      yAxisTitle: "Total points",
+      note: yMin > 0 ? `Y-axis starts at ${yMin} to make recent movement easier to compare.` : "",
+      xLabel: (index) => `Game ${firstGame + index}`,
+      legendValue: (values) => values[values.length - 1] || 0,
+      tooltipValue: (values) => values[values.length - 1] || 0,
+    };
+  }
+
+  if (type === "momentum") {
+    const series = Object.fromEntries(data.players.map((player) => {
+      const values = playedProgressValuesForPlayer(data, player);
+      const start = Math.max(0, values.length - 5);
+      return [player, values.slice(start).map((value, index) => {
+        const previous = values[start + index - 1] || 0;
+        return value - previous;
+      })];
+    }));
+    const pointCount = Math.max(1, Math.max(...Object.values(series).map((values) => values.length)));
+    const firstGame = Math.max(1, playedCount - pointCount + 1);
+    const values = Object.values(series).flat();
+
+    return {
+      type,
+      series,
+      playedCount,
+      hasWinnerPoint: false,
+      maxScore: niceChartMax(Math.max(10, ...values)),
+      minScore: 0,
+      brokenAxis: false,
+      xAxisTitle: "Points gained in the last 5 games",
+      yAxisTitle: "Points gained",
+      note: "Momentum shows per-game points instead of running totals.",
+      xLabel: (index) => `Game ${firstGame + index}`,
+      legendValue: (values) => values.reduce((total, value) => total + value, 0),
+      tooltipValue: (values) => values[values.length - 1] || 0,
+    };
+  }
+
+  const series = Object.fromEntries(data.players.map((player) => [player, chartValuesForPlayer(data, player)]));
+  const playedValues = Object.values(series).flat();
+
+  return {
+    type,
+    series,
+    playedCount,
+    hasWinnerPoint,
+    maxScore: niceChartMax(Math.max(10, ...playedValues)),
+    minScore: 0,
+    brokenAxis: false,
+    xAxisTitle: "Progress by game",
+    yAxisTitle: "Total points",
+    note: "",
+    xLabel: (index, pointCount) => chartXLabel(index, pointCount, playedCount, hasWinnerPoint),
+    legendValue: (values) => values[values.length - 1] || 0,
+    tooltipValue: (values) => values[values.length - 1] || 0,
+  };
 }
 
 function parseScore(score) {
@@ -150,10 +239,63 @@ function statTable(headings, rows, keys) {
   `;
 }
 
+function biggestMoversTable(rows) {
+  if (!rows.length) {
+    return "<p class=\"stat-note\">No rank changes in this selection.</p>";
+  }
+
+  return `
+    <table class="movers-table">
+      <thead>
+        <tr><th>Player</th><th>Move</th><th>From → To</th><th>Points</th></tr>
+      </thead>
+      <tbody>
+        ${rows.map((row, index) => `
+          <tr style="--row-delay: ${index * 45}ms">
+            <td>${row.player}</td>
+            <td>${row.change}</td>
+            <td>${row.fromTo}</td>
+            <td><strong>${row.points}</strong></td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function biggestMoversPanel(data, gameCount = 1) {
+  const playedMatches = playedMatchesByDate(data);
+  if (!playedMatches.length) return "<p class=\"stat-note\">No matches have been played yet.</p>";
+
+  const maxGames = Math.min(10, playedMatches.length);
+  const count = Math.max(1, Math.min(maxGames, gameCount));
+  const matches = playedMatches.slice(-count);
+  const firstMatch = matches[0];
+  const lastMatch = matches[matches.length - 1];
+  const scope = count === 1 ? `${lastMatch.id}. ${lastMatch.label}` : `${firstMatch.id} to ${lastMatch.id}`;
+
+  return `
+    <div class="stat-control">
+      <label for="moverWindow">Last <strong id="moverWindowValue">${count}</strong> <span id="moverWindowUnit">${count === 1 ? "game" : "games"}</span></label>
+      <input id="moverWindow" type="range" min="1" max="${maxGames}" value="${count}" step="1">
+    </div>
+    <p class="stat-note" id="moverWindowNote">Rank changes from ${scope}. Positive points are from the selected games only.</p>
+    <div id="biggestMoversTable">
+      ${biggestMoversTable(biggestMoverRows(data, count))}
+    </div>
+  `;
+}
+
 function latestPlayedMatch(data) {
   return [...data.matches]
     .filter((match) => match.score)
     .sort((a, b) => matchTimestamp(b) - matchTimestamp(a) || b.id - a.id)[0];
+}
+
+function playedMatchesByDate(data) {
+  return [...data.matches]
+    .filter((match) => match.score)
+    .sort((a, b) => matchTimestamp(a) - matchTimestamp(b) || a.id - b.id);
 }
 
 function rankMap(rows) {
@@ -195,9 +337,42 @@ function movementBadge(movement) {
   return `<span class="mover mover-${direction}" aria-label="${label}"><span aria-hidden="true">${arrow}</span>${Math.abs(movement)}</span>`;
 }
 
-function biggestMoverRows(data) {
-  const { latest, byPlayer } = leaderboardMovement(data);
-  if (!latest) return [];
+function biggestMoverWindow(data, gameCount) {
+  const playedMatches = playedMatchesByDate(data);
+  const count = Math.max(1, Math.min(10, gameCount, playedMatches.length));
+  const matches = playedMatches.slice(-count);
+  if (!matches.length) return { matches: [], byPlayer: {} };
+
+  const windowPoints = Object.fromEntries(data.players.map((player) => [
+    player,
+    matches.reduce((total, match) => total + (match.points[player] || 0), 0),
+  ]));
+  const previousRows = data.leaderboard
+    .map((row) => ({
+      player: row.player,
+      points: row.points - windowPoints[row.player],
+    }))
+    .sort((a, b) => b.points - a.points || a.player.localeCompare(b.player));
+
+  const previousRanks = rankMap(previousRows);
+  const currentRanks = rankMap(data.leaderboard);
+  const byPlayer = {};
+
+  data.players.forEach((player) => {
+    byPlayer[player] = {
+      movement: previousRanks[player] - currentRanks[player],
+      previousRank: previousRanks[player],
+      currentRank: currentRanks[player],
+      windowPoints: windowPoints[player],
+    };
+  });
+
+  return { matches, byPlayer };
+}
+
+function biggestMoverRows(data, gameCount = 1) {
+  const { matches, byPlayer } = biggestMoverWindow(data, gameCount);
+  if (!matches.length) return [];
 
   return data.players
     .map((player) => ({
@@ -205,7 +380,7 @@ function biggestMoverRows(data) {
       movement: byPlayer[player].movement,
       change: movementBadge(byPlayer[player].movement),
       fromTo: `${byPlayer[player].previousRank} → ${byPlayer[player].currentRank}`,
-      points: byPlayer[player].latestPoints,
+      points: byPlayer[player].windowPoints,
     }))
     .filter((row) => row.movement !== 0)
     .sort((a, b) => Math.abs(b.movement) - Math.abs(a.movement) || b.movement - a.movement || a.player.localeCompare(b.player));
@@ -448,7 +623,7 @@ function bindMatchToggles() {
   });
 }
 
-function drawChart(data) {
+function drawChart(data, type = selectedChartType) {
   const canvas = document.querySelector("#progressChart");
   const context = canvas.getContext("2d");
   const width = canvas.width;
@@ -456,11 +631,9 @@ function drawChart(data) {
   const padding = { top: 30, right: 78, bottom: 58, left: 68 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
-  const playedCount = data.matches.filter((match) => match.score).length;
-  const series = Object.fromEntries(data.players.map((player) => [player, chartValuesForPlayer(data, player)]));
-  const playedValues = Object.values(series).flat();
-  const maxScore = niceChartMax(Math.max(10, ...playedValues));
-  const hasWinnerPoint = Boolean(data.winner?.actual);
+  const config = chartConfig(data, type);
+  const { series, maxScore, minScore } = config;
+  const scoreRange = Math.max(1, maxScore - minScore);
   const pointCount = Math.max(1, Math.max(...Object.values(series).map((values) => values.length)));
   const pointsByPlayer = {};
 
@@ -468,18 +641,19 @@ function drawChart(data) {
     pointsByPlayer[player] = series[player].map((value, index) => ({
       value,
       x: padding.left + (index / Math.max(1, pointCount - 1)) * chartWidth,
-      y: height - padding.bottom - (value / maxScore) * chartHeight,
+      y: height - padding.bottom - ((value - minScore) / scoreRange) * chartHeight,
     }));
   });
 
   chartState = {
     data,
+    config,
     padding,
     chartWidth,
     chartHeight,
     maxScore,
-    playedCount,
-    hasWinnerPoint,
+    minScore,
+    scoreRange,
     pointCount,
     series,
     pointsByPlayer,
@@ -493,7 +667,7 @@ function renderChart() {
   const canvas = document.querySelector("#progressChart");
   const context = canvas.getContext("2d");
   const tooltip = document.querySelector("#chartTooltip");
-  const { data, padding, chartWidth, chartHeight, maxScore, playedCount, hasWinnerPoint, pointCount, series, pointsByPlayer, hoveredPlayer } = chartState;
+  const { data, config, padding, chartWidth, chartHeight, maxScore, minScore, scoreRange, pointCount, series, pointsByPlayer, hoveredPlayer } = chartState;
   const width = canvas.width;
   const height = canvas.height;
   const plotBottom = height - padding.bottom;
@@ -509,8 +683,8 @@ function renderChart() {
   context.fillStyle = "#637069";
 
   for (let tick = 0; tick <= 5; tick += 1) {
-    const value = Math.round((maxScore / 5) * tick);
-    const y = plotBottom - (value / maxScore) * chartHeight;
+    const value = Math.round(minScore + (scoreRange / 5) * tick);
+    const y = plotBottom - ((value - minScore) / scoreRange) * chartHeight;
     context.beginPath();
     context.moveTo(padding.left, y);
     context.lineTo(plotRight, y);
@@ -530,7 +704,7 @@ function renderChart() {
     context.fillStyle = "#637069";
     context.textAlign = tick === 0 ? "left" : tick === pointCount - 1 ? "right" : "center";
     context.textBaseline = "top";
-    context.fillText(chartXLabel(tick, pointCount, playedCount, hasWinnerPoint), x, plotBottom + 16);
+    context.fillText(config.xLabel(tick, pointCount), x, plotBottom + 16);
   });
 
   context.strokeStyle = "#c7d6ca";
@@ -541,15 +715,26 @@ function renderChart() {
   context.lineTo(plotRight, plotBottom);
   context.stroke();
 
+  if (config.brokenAxis) {
+    context.strokeStyle = "#637069";
+    context.lineWidth = 1.5;
+    context.beginPath();
+    context.moveTo(padding.left - 7, plotBottom - 18);
+    context.lineTo(padding.left + 7, plotBottom - 8);
+    context.moveTo(padding.left - 7, plotBottom - 10);
+    context.lineTo(padding.left + 7, plotBottom);
+    context.stroke();
+  }
+
   context.fillStyle = "#637069";
   context.font = "bold 13px Arial";
   context.textAlign = "center";
   context.textBaseline = "bottom";
-  context.fillText("Progress by game", padding.left + chartWidth / 2, height - 8);
+  context.fillText(config.xAxisTitle, padding.left + chartWidth / 2, height - 8);
   context.save();
   context.translate(18, padding.top + chartHeight / 2);
   context.rotate(-Math.PI / 2);
-  context.fillText("Total points", 0, 0);
+  context.fillText(config.yAxisTitle, 0, 0);
   context.restore();
 
   data.players.forEach((player, playerIndex) => {
@@ -589,10 +774,14 @@ function renderChart() {
 
   document.querySelector("#chartLegend").innerHTML = data.players.map((player, playerIndex) => {
     const values = series[player];
-    const finalValue = values[values.length - 1] || 0;
+    const finalValue = config.legendValue(values);
     const stateClass = hoveredPlayer === player ? "is-active" : hoveredPlayer ? "is-muted" : "";
     return `<span class="${stateClass}" data-chart-player="${player}"><i style="background:${colors[playerIndex % colors.length]}"></i>${player}: ${finalValue}</span>`;
   }).join("");
+
+  const note = document.querySelector("#chartNote");
+  note.textContent = config.note;
+  note.hidden = !config.note;
 
   if (!hoveredPlayer) {
     tooltip.classList.remove("is-visible");
@@ -650,7 +839,7 @@ function bindChartHover() {
     const tooltip = document.querySelector("#chartTooltip");
     if (player) {
       const values = chartState.series[player];
-      tooltip.textContent = `${player}: ${values[values.length - 1] || 0}`;
+      tooltip.textContent = `${player}: ${chartState.config.tooltipValue(values)}`;
       tooltip.style.left = `${event.clientX - rect.left}px`;
       tooltip.style.top = `${event.clientY - rect.top}px`;
       tooltip.classList.add("is-visible");
@@ -683,6 +872,45 @@ function bindChartHover() {
   });
 }
 
+function bindChartPicker() {
+  const picker = document.querySelector("#chartPicker");
+  picker.addEventListener("change", () => {
+    selectedChartType = picker.value;
+    chartState = { ...chartState, hoveredPlayer: null };
+    document.querySelector("#chartTooltip").classList.remove("is-visible");
+    drawChart(currentData, selectedChartType);
+  });
+}
+
+function bindBiggestMoversControls(data) {
+  const slider = document.querySelector("#moverWindow");
+  if (!slider) return;
+
+  const value = document.querySelector("#moverWindowValue");
+  const unit = document.querySelector("#moverWindowUnit");
+  const note = document.querySelector("#moverWindowNote");
+  const target = document.querySelector("#biggestMoversTable");
+  slider.addEventListener("input", () => {
+    const count = Number(slider.value);
+    const matches = playedMatchesByDate(data).slice(-count);
+    const firstMatch = matches[0];
+    const lastMatch = matches[matches.length - 1];
+    const scope = count === 1 ? `${lastMatch.id}. ${lastMatch.label}` : `${firstMatch.id} to ${lastMatch.id}`;
+
+    value.textContent = String(count);
+    unit.textContent = count === 1 ? "game" : "games";
+    note.textContent = `Rank changes from ${scope}. Positive points are from the selected games only.`;
+    target.innerHTML = biggestMoversTable(biggestMoverRows(data, count));
+  });
+}
+
+function groupedLeaderboardTitle(field, label, value) {
+  const text = String(value);
+  if (field === "group" && /^[A-L]$/.test(text)) return `${label} ${text}`;
+  if (field === "round" && /^[1-3]$/.test(text)) return `${label} ${text}`;
+  return text;
+}
+
 function groupedLeaderboards(data, field, label) {
   const values = sortValues([...new Set(data.matches.map((match) => match[field]))]);
 
@@ -692,7 +920,7 @@ function groupedLeaderboards(data, field, label) {
       const rows = rowsForMatches(data, data.matches.filter((match) => match[field] === value));
       return `
         <article class="mini-board">
-          <div class="mini-heading">${label} ${value}</div>
+          <div class="mini-heading">${groupedLeaderboardTitle(field, label, value)}</div>
           ${rows.slice(0, 3).map((row, index) => `
             <div class="mini-row">
               <span>${index + 1}. ${row.player}</span>
@@ -837,14 +1065,7 @@ function renderSelectedStat(data) {
     html = playerTable(rowsForMatches(data, playedMatches.slice(-5)));
   }
   if (selected === "biggestMovers") {
-    const latest = latestPlayedMatch(data);
-    const rows = biggestMoverRows(data);
-    html = latest
-      ? `
-        <p class="stat-note">Rank changes after ${latest.id}. ${latest.label}. Positive points are from that match only.</p>
-        ${rows.length ? simpleTable(["Player", "Move", "From → To", "Points"], rows, ["player", "change", "fromTo", "points"]) : "<p class=\"stat-note\">No rank changes after the latest played match.</p>"}
-      `
-      : "<p class=\"stat-note\">No matches have been played yet.</p>";
+    html = biggestMoversPanel(data);
   }
   if (selected === "predictionConsensus") {
     html = `
@@ -897,6 +1118,7 @@ function renderSelectedStat(data) {
   }
 
   document.querySelector("#statPanel").innerHTML = html;
+  if (selected === "biggestMovers") bindBiggestMoversControls(data);
 }
 
 fetch("/api/data")
@@ -910,7 +1132,8 @@ fetch("/api/data")
     renderNextGame(data);
     renderLeaderboard(data);
     renderMatches(data);
-    drawChart(data);
+    drawChart(data, selectedChartType);
     renderSelectedStat(data);
+    bindChartPicker();
     document.querySelector("#statPicker").addEventListener("change", () => renderSelectedStat(currentData));
   });
