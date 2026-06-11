@@ -746,15 +746,7 @@ function renderChart() {
     context.strokeStyle = color;
     context.lineWidth = hoveredPlayer === player ? 4.5 : data.players.length > 5 ? 1.8 : 2.5;
     context.beginPath();
-
-    points.forEach(({ x, y }, index) => {
-      if (index === 0) {
-        context.moveTo(x, y);
-      } else {
-        context.lineTo(x, y);
-      }
-    });
-
+    drawSmoothLine(context, points);
     context.stroke();
 
     const lastPoint = points[points.length - 1];
@@ -813,6 +805,32 @@ function hoveredChartPlayer(canvasPoint) {
   });
 
   return best.distance <= 14 ? best.player : null;
+}
+
+function drawSmoothLine(context, points) {
+  if (points.length === 1) {
+    context.moveTo(points[0].x, points[0].y);
+    return;
+  }
+
+  context.moveTo(points[0].x, points[0].y);
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const current = points[index];
+    const next = points[index + 1];
+    const previous = points[index - 1] || current;
+    const following = points[index + 2] || next;
+    const controlScale = 0.18;
+    const control1 = {
+      x: current.x + (next.x - previous.x) * controlScale,
+      y: current.y + (next.y - previous.y) * controlScale,
+    };
+    const control2 = {
+      x: next.x - (following.x - current.x) * controlScale,
+      y: next.y - (following.y - current.y) * controlScale,
+    };
+
+    context.bezierCurveTo(control1.x, control1.y, control2.x, control2.y, next.x, next.y);
+  }
 }
 
 function bindChartHover() {
