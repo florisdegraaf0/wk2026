@@ -466,15 +466,11 @@ function playerRank(data, player) {
 }
 
 function playerPredictionRows(data, player) {
-  const played = playedMatchesByDate(data).slice(-5).reverse();
-  const upcoming = upcomingMatches(data).slice(0, 5);
-  const rows = [...played, ...upcoming].slice(0, 8);
-
-  return rows.map((match) => ({
+  return playedMatchesByDate(data).slice(-5).reverse().map((match) => ({
     game: `${match.id}. ${match.label}`,
     prediction: match.predictions?.[player] || "-",
     result: match.score || "-",
-    points: match.score ? match.points[player] : "-",
+    points: match.points[player] || 0,
   }));
 }
 
@@ -487,8 +483,9 @@ function renderPlayerProfile(data, player) {
   }));
   const exact = playerMatches.filter((row) => row.points === 10).length;
   const average = playerMatches.length ? (leaderboardRow.matchPoints / playerMatches.length).toFixed(1) : "0.0";
-  const lastFivePoints = playerMatches.slice(-5).reduce((total, row) => total + row.points, 0);
-  const bestMatch = [...playerMatches].sort((a, b) => b.points - a.points || b.match.id - a.match.id)[0];
+  const lastFiveMatches = playerMatches.slice(-5);
+  const lastFivePoints = lastFiveMatches.reduce((total, row) => total + row.points, 0);
+  const lastFiveAverage = lastFiveMatches.length ? (lastFivePoints / lastFiveMatches.length).toFixed(1) : "0.0";
   const winnerPick = data.winner?.predictions?.[player]?.winner || "-";
   const movement = leaderboardMovement(data).byPlayer[player]?.movement || 0;
   const predictions = playerPredictionRows(data, player);
@@ -516,7 +513,7 @@ function renderPlayerProfile(data, player) {
       <span>${movementBadge(movement) || "No rank change after the latest game"}</span>
       <span>Average ${average} points per played game</span>
       <span>Winner pick: <strong>${winnerPick}</strong></span>
-      <span>Best game: <strong>${bestMatch ? `${bestMatch.match.id}. ${bestMatch.match.label} (${bestMatch.points})` : "-"}</strong></span>
+      <span>Last 5 average: <strong>${lastFiveAverage}</strong></span>
     </div>
     <table class="profile-table">
       <thead>
