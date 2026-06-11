@@ -1045,11 +1045,11 @@ function radarMetrics(data, player) {
   const filled = data.matches.filter((match) => match.predictions?.[player]).length;
 
   return [
-    { label: "Exact", value: playedCount ? (exact / playedCount) * 100 : 0 },
-    { label: "Any pts", value: playedCount ? (anyPoints / playedCount) * 100 : 0 },
-    { label: "Avg pts", value: (average / 10) * 100 },
-    { label: "Last 5", value: (lastFiveAverage / 10) * 100 },
-    { label: "Filled", value: data.matches.length ? (filled / data.matches.length) * 100 : 0 },
+    { label: "Exact", value: playedCount ? (exact / playedCount) * 100 : 0, display: `${exact}/${playedCount}` },
+    { label: "Any pts", value: playedCount ? (anyPoints / playedCount) * 100 : 0, display: `${anyPoints}/${playedCount}` },
+    { label: "Avg pts", value: (average / 10) * 100, display: average.toFixed(1) },
+    { label: "Last 5 avg", value: (lastFiveAverage / 10) * 100, display: lastFiveAverage.toFixed(1) },
+    { label: "Filled", value: data.matches.length ? (filled / data.matches.length) * 100 : 0, display: `${filled}/${data.matches.length}` },
   ];
 }
 
@@ -1088,6 +1088,8 @@ function drawGeekRadar(context, data, player, width, height) {
     context.textAlign = x < center.x - 8 ? "right" : x > center.x + 8 ? "left" : "center";
     context.textBaseline = y < center.y ? "bottom" : "top";
     context.fillText(metric.label, x, y);
+    context.font = "12px Arial";
+    context.fillText(metric.display, x, y < center.y ? y - 16 : y + 16);
   });
 
   context.beginPath();
@@ -1112,7 +1114,7 @@ function drawGeekRadar(context, data, player, width, height) {
   context.textBaseline = "top";
   context.fillText(player, center.x, 18);
 
-  return "Radar values are normalized to 0-100: exact rate, games with points, average points, last-5 average, and filled predictions.";
+  return "Radar guide: Exact = exact scores in played games. Any pts = played games with at least 2 points. Avg pts = average points per played game. Last 5 avg = average points in the latest 5 played games. Filled = matches where this player entered a prediction. The shape is scaled to 0-100 so the axes can be compared.";
 }
 
 function drawGeekVolatility(context, data, player, width, height) {
@@ -1147,8 +1149,8 @@ function drawGeekVolatility(context, data, player, width, height) {
   rows.forEach((row, index) => {
     const x = padding.left + index * (barWidth + barGap);
     const barHeight = (row.points / 10) * chartHeight;
-    context.fillStyle = pointClass(row.points, true) === "score-10" ? "#0b7a45" : colors[index % colors.length];
-    context.globalAlpha = 0.86;
+    context.fillStyle = "#8fb99a";
+    context.globalAlpha = row.points === 10 ? 0.95 : 0.72;
     context.fillRect(x, height - padding.bottom - barHeight, barWidth, barHeight);
     context.globalAlpha = 1;
     context.fillStyle = "#637069";
@@ -1213,8 +1215,10 @@ function drawGeekDistance(context, data, width, height) {
   rows.forEach((row, index) => {
     const x = padding.left + index * (barWidth + barGap);
     const barHeight = (row.average / maxDistance) * chartHeight;
-    context.fillStyle = colors[index % colors.length];
+    context.fillStyle = "#8fb99a";
+    context.globalAlpha = 0.78;
     context.fillRect(x, height - padding.bottom - barHeight, barWidth, barHeight);
+    context.globalAlpha = 1;
     context.fillStyle = "#17201b";
     context.textAlign = "center";
     context.textBaseline = "bottom";
