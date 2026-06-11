@@ -1034,7 +1034,7 @@ function drawGeekDistribution(context, data, width, height) {
   return "Stacked bars show how each player gets their points: spikes, steady partial hits, or zeros.";
 }
 
-function radarMetrics(data, player) {
+function rawRadarMetrics(data, player) {
   const rows = playerPlayedRows(data, player);
   const playedCount = rows.length;
   const exact = rows.filter((row) => row.points === 10).length;
@@ -1042,15 +1042,26 @@ function radarMetrics(data, player) {
   const average = playedCount ? rows.reduce((total, row) => total + row.points, 0) / playedCount : 0;
   const lastFive = rows.slice(-5);
   const lastFiveAverage = lastFive.length ? lastFive.reduce((total, row) => total + row.points, 0) / lastFive.length : 0;
-  const filled = data.matches.filter((match) => match.predictions?.[player]).length;
 
   return [
-    { label: "Exact", value: playedCount ? (exact / playedCount) * 100 : 0, display: `${exact}/${playedCount}` },
-    { label: "Any pts", value: playedCount ? (anyPoints / playedCount) * 100 : 0, display: `${anyPoints}/${playedCount}` },
-    { label: "Avg pts", value: (average / 10) * 100, display: average.toFixed(1) },
-    { label: "Last 5 avg", value: (lastFiveAverage / 10) * 100, display: lastFiveAverage.toFixed(1) },
-    { label: "Filled", value: data.matches.length ? (filled / data.matches.length) * 100 : 0, display: `${filled}/${data.matches.length}` },
+    { label: "Exact", raw: playedCount ? exact / playedCount : 0, display: `${exact}/${playedCount}` },
+    { label: "Any pts", raw: playedCount ? anyPoints / playedCount : 0, display: `${anyPoints}/${playedCount}` },
+    { label: "Avg pts", raw: average, display: average.toFixed(1) },
+    { label: "Last 5 avg", raw: lastFiveAverage, display: lastFiveAverage.toFixed(1) },
   ];
+}
+
+function radarMetrics(data, player) {
+  const playerMetrics = rawRadarMetrics(data, player);
+  const maxByLabel = Object.fromEntries(playerMetrics.map((metric) => {
+    const maxValue = Math.max(...data.players.map((candidate) => rawRadarMetrics(data, candidate).find((item) => item.label === metric.label).raw));
+    return [metric.label, maxValue || 1];
+  }));
+
+  return playerMetrics.map((metric) => ({
+    ...metric,
+    value: (metric.raw / maxByLabel[metric.label]) * 100,
+  }));
 }
 
 function drawGeekRadar(context, data, player, width, height) {
@@ -1114,7 +1125,7 @@ function drawGeekRadar(context, data, player, width, height) {
   context.textBaseline = "top";
   context.fillText(player, center.x, 18);
 
-  return "Radar guide: Exact = exact scores in played games. Any pts = played games with at least 2 points. Avg pts = average points per played game. Last 5 avg = average points in the latest 5 played games. Filled = matches where this player entered a prediction. The shape is scaled to 0-100 so the axes can be compared.";
+  return "Radar guide: Exact = exact scores in played games. Any pts = played games with at least 2 points. Avg pts = average points per played game. Last 5 avg = average points in the latest 5 played games. Each axis is normalized against the best player for that stat, so the outer ring means current best in the pool.";
 }
 
 function drawGeekVolatility(context, data, player, width, height) {
