@@ -391,6 +391,11 @@ td:last-child {
   text-align: right;
 }
 
+#matchHead th:last-child,
+#matches td:last-child {
+  text-align: left;
+}
+
 canvas {
   display: block;
   width: 100%;
