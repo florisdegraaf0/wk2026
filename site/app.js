@@ -22,6 +22,10 @@ function pointClass(points, played) {
   return "score-0";
 }
 
+function playerButton(player) {
+  return `<button class="player-link" type="button" data-profile-player="${player}">${player}</button>`;
+}
+
 function chartValuesForPlayer(data, player) {
   const values = data.progress[player].filter((value) => value !== null);
   if (data.winner?.actual && values.length) {
@@ -170,7 +174,7 @@ function renderPlayerRows(target, rows) {
         <td>${row.rank}</td>
         <td>
           <span class="player-cell">
-            ${row.player}
+            ${playerButton(row.player)}
             ${movementBadge(row.movement)}
           </span>
         </td>
@@ -455,6 +459,105 @@ function renderLeaderboard(data) {
     movement: byPlayer[row.player]?.movement || 0,
   }));
   renderPlayerRows("#leaderboard", rows);
+}
+
+function playerRank(data, player) {
+  return rowsWithRanks(data.leaderboard).find((row) => row.player === player)?.rank || "-";
+}
+
+function playerPredictionRows(data, player) {
+  const played = playedMatchesByDate(data).slice(-5).reverse();
+  const upcoming = upcomingMatches(data).slice(0, 5);
+  const rows = [...played, ...upcoming].slice(0, 8);
+
+  return rows.map((match) => ({
+    game: `${match.id}. ${match.label}`,
+    prediction: match.predictions?.[player] || "-",
+    result: match.score || "-",
+    points: match.score ? match.points[player] : "-",
+  }));
+}
+
+function renderPlayerProfile(data, player) {
+  const leaderboardRow = data.leaderboard.find((row) => row.player === player) || { points: 0, matchPoints: 0, winnerPoints: 0 };
+  const playedMatches = playedMatchesByDate(data);
+  const playerMatches = playedMatches.map((match) => ({
+    match,
+    points: match.points[player] || 0,
+  }));
+  const exact = playerMatches.filter((row) => row.points === 10).length;
+  const average = playerMatches.length ? (leaderboardRow.matchPoints / playerMatches.length).toFixed(1) : "0.0";
+  const lastFivePoints = playerMatches.slice(-5).reduce((total, row) => total + row.points, 0);
+  const bestMatch = [...playerMatches].sort((a, b) => b.points - a.points || b.match.id - a.match.id)[0];
+  const winnerPick = data.winner?.predictions?.[player]?.winner || "-";
+  const movement = leaderboardMovement(data).byPlayer[player]?.movement || 0;
+  const predictions = playerPredictionRows(data, player);
+
+  document.querySelector("#playerProfile").innerHTML = `
+    <div class="profile-summary">
+      <div>
+        <span>Rank</span>
+        <strong>#${playerRank(data, player)}</strong>
+      </div>
+      <div>
+        <span>Total</span>
+        <strong>${leaderboardRow.points}</strong>
+      </div>
+      <div>
+        <span>Last 5</span>
+        <strong>${lastFivePoints}</strong>
+      </div>
+      <div>
+        <span>Exact</span>
+        <strong>${exact}</strong>
+      </div>
+    </div>
+    <div class="profile-meta">
+      <span>${movementBadge(movement) || "No rank change after the latest game"}</span>
+      <span>Average ${average} points per played game</span>
+      <span>Winner pick: <strong>${winnerPick}</strong></span>
+      <span>Best game: <strong>${bestMatch ? `${bestMatch.match.id}. ${bestMatch.match.label} (${bestMatch.points})` : "-"}</strong></span>
+    </div>
+    <table class="profile-table">
+      <thead>
+        <tr><th>Game</th><th>Prediction</th><th>Result</th><th>Points</th></tr>
+      </thead>
+      <tbody>
+        ${predictions.map((row) => `
+          <tr>
+            <td>${row.game}</td>
+            <td>${row.prediction}</td>
+            <td>${row.result}</td>
+            <td>${row.points}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function selectPlayerProfile(player) {
+  const picker = document.querySelector("#playerPicker");
+  if (!currentData || !picker) return;
+  picker.value = player;
+  renderPlayerProfile(currentData, player);
+}
+
+function renderPlayerProfilePicker(data) {
+  const picker = document.querySelector("#playerPicker");
+  picker.innerHTML = data.players.map((player) => `<option value="${player}">${player}</option>`).join("");
+  picker.value = data.leaderboard[0]?.player || data.players[0];
+  renderPlayerProfile(data, picker.value);
+  picker.addEventListener("change", () => renderPlayerProfile(currentData, picker.value));
+}
+
+function bindProfileLinks() {
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-profile-player]");
+    if (!button) return;
+    selectPlayerProfile(button.dataset.profilePlayer);
+    document.querySelector("#playerProfile")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
 }
 
 function matchDateTimeLabel(match) {
@@ -768,7 +871,7 @@ function renderChart() {
     const values = series[player];
     const finalValue = config.legendValue(values);
     const stateClass = hoveredPlayer === player ? "is-active" : hoveredPlayer ? "is-muted" : "";
-    return `<span class="${stateClass}" data-chart-player="${player}"><i style="background:${colors[playerIndex % colors.length]}"></i>${player}: ${finalValue}</span>`;
+    return `<span class="${stateClass}" data-chart-player="${player}" data-profile-player="${player}"><i style="background:${colors[playerIndex % colors.length]}"></i>${player}: ${finalValue}</span>`;
   }).join("");
 
   const note = document.querySelector("#chartNote");
@@ -1149,9 +1252,11 @@ fetch("/api/data")
     currentData = data;
     renderNextGame(data);
     renderLeaderboard(data);
+    renderPlayerProfilePicker(data);
     renderMatches(data);
     drawChart(data, selectedChartType);
     renderSelectedStat(data);
     bindChartPicker();
+    bindProfileLinks();
     document.querySelector("#statPicker").addEventListener("change", () => renderSelectedStat(currentData));
   });

@@ -70,6 +70,21 @@ table {
   gap: 8px;
 }
 
+.player-link {
+  padding: 0;
+  border: 0;
+  color: #0b7a45;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.player-link:hover,
+.player-link:focus-visible {
+  text-decoration: underline;
+}
+
 .mover {
   display: inline-flex;
   align-items: center;
@@ -228,6 +243,64 @@ h3 {
   margin-bottom: 14px;
   color: #637069;
   line-height: 1.45;
+}
+
+.profile-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.profile-summary div {
+  padding: 10px;
+  border: 1px solid #e6eee8;
+  border-radius: 6px;
+  background: #fbfdfb;
+}
+
+.profile-summary span,
+.profile-meta > span {
+  color: #637069;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.profile-summary strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 22px;
+}
+
+.profile-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.profile-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #eef6ef;
+  text-transform: none;
+}
+
+.profile-table {
+  table-layout: fixed;
+}
+
+.profile-table th:nth-child(2),
+.profile-table td:nth-child(2),
+.profile-table th:nth-child(3),
+.profile-table td:nth-child(3),
+.profile-table th:nth-child(4),
+.profile-table td:nth-child(4) {
+  width: 110px;
 }
 
 .stat-control {
@@ -565,6 +638,15 @@ code {
   .stat-control input[type="range"] {
     width: 100%;
     margin-top: 8px;
+  }
+
+  .profile-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-table {
+    table-layout: auto;
+    font-size: 13px;
   }
 
   #matchHead {
