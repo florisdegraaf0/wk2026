@@ -43,11 +43,23 @@
       <section>
         <div class="section-head">
           <h2>Progress Charts</h2>
-          <select id="chartPicker" aria-label="Choose chart">
-            <option value="full">Full tournament</option>
-            <option value="lastFive">Last 5 games</option>
-            <option value="momentum">Momentum</option>
-          </select>
+          <div class="chart-controls">
+            <select id="chartPicker" aria-label="Choose chart">
+              <option value="full">Full tournament</option>
+              <option value="lastFive">Last 5 games</option>
+              <option value="momentum">Momentum</option>
+            </select>
+          </div>
+        </div>
+        <div class="chart-player-controls">
+          <div class="chart-control-row">
+            <div id="chartPresetControls" class="chart-filter-list" aria-label="Chart presets"></div>
+            <div class="chart-control-actions">
+              <button type="button" id="selectAllChartPlayers">Select all</button>
+              <button type="button" id="deselectAllChartPlayers">Deselect all</button>
+            </div>
+          </div>
+          <div id="chartPlayerControls" class="chart-filter-list" aria-label="Chart players"></div>
         </div>
         <div class="chart-wrap">
           <canvas id="progressChart" width="1000" height="420"></canvas>

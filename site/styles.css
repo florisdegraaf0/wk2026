@@ -61,6 +61,74 @@ select {
   background: #f5f8f6;
 }
 
+.chart-player-controls {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0 14px;
+}
+
+.chart-control-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.chart-filter-list,
+.chart-control-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chart-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 6px 9px;
+  border: 1px solid #d8e2d9;
+  border-radius: 6px;
+  background: #fbfdfb;
+  color: #243129;
+  font-size: 13px;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.chart-filter input {
+  margin: 0;
+  accent-color: #0b7a45;
+}
+
+.chart-filter:has(input:checked) {
+  border-color: #9fc6ab;
+  background: #eaf5ee;
+}
+
+.chart-filter.is-disabled {
+  display: none;
+}
+
+.chart-control-actions button {
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid #d8e2d9;
+  border-radius: 6px;
+  background: #fff;
+  color: #0b7a45;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.chart-control-actions button:hover,
+.chart-control-actions button:focus-visible {
+  border-color: #9fc6ab;
+  background: #f4faf6;
+}
+
 section {
   margin: 0 0 28px;
   padding: 18px;
@@ -644,6 +712,14 @@ code {
   .chart-controls {
     display: grid;
     gap: 8px;
+  }
+
+  .chart-control-row {
+    display: grid;
+  }
+
+  .chart-control-actions button {
+    flex: 1 1 128px;
   }
 
   .stat-control {

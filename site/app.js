@@ -1,8 +1,18 @@
-const colors = ["#0b7a45", "#c0362c", "#286b9a", "#c58a24", "#6f42c1", "#222222"];
+const colors = ["#0b7a45", "#c0362c", "#286b9a", "#c58a24", "#6f42c1", "#222222", "#d14f7b", "#00878f", "#7a5b2e", "#5b8f22", "#a24416", "#3858b8"];
 const matchTimeZoneOffset = "+02:00";
+const nextGameHoldMilliseconds = 2 * 60 * 60 * 1000;
 let currentData;
 let chartState;
 let selectedChartType = "full";
+let selectedChartPlayers = new Set();
+
+const chartPlayerPresets = [
+  { label: "Wiebe/Heleen", players: ["Wiebe", "Heleen"] },
+  { label: "Susanne/Nina", players: ["Susanne", "Nina"] },
+  { label: "Familie Kolfschoten", players: ["Remo", "Renske", "Xavi", "Manuel"] },
+  { label: "Floris/Shino/Toma", players: ["Floris", "Shino", "Toma"] },
+  { label: "Familie Kuiper", players: ["Bert", "Thea", "Ryan", "Dionne"] },
+];
 
 function sortValues(values) {
   return values.sort((a, b) => {
@@ -49,12 +59,16 @@ function playedProgressValuesForPlayer(data, player) {
   return data.progress[player].filter((value) => value !== null);
 }
 
-function chartConfig(data, type) {
+function selectedChartPlayerList(data) {
+  return data.players.filter((player) => selectedChartPlayers.has(player));
+}
+
+function chartConfig(data, type, players = data.players) {
   const playedCount = data.matches.filter((match) => match.score).length;
   const hasWinnerPoint = Boolean(data.winner?.actual);
 
   if (type === "lastFive") {
-    const series = Object.fromEntries(data.players.map((player) => {
+    const series = Object.fromEntries(players.map((player) => {
       const values = playedProgressValuesForPlayer(data, player);
       return [player, values.slice(-5)];
     }));
@@ -84,7 +98,7 @@ function chartConfig(data, type) {
   }
 
   if (type === "momentum") {
-    const series = Object.fromEntries(data.players.map((player) => {
+    const series = Object.fromEntries(players.map((player) => {
       const values = playedProgressValuesForPlayer(data, player);
       const start = Math.max(0, values.length - 5);
       return [player, values.slice(start).map((value, index) => {
@@ -113,7 +127,7 @@ function chartConfig(data, type) {
     };
   }
 
-  const series = Object.fromEntries(data.players.map((player) => [player, chartValuesForPlayer(data, player)]));
+  const series = Object.fromEntries(players.map((player) => [player, chartValuesForPlayer(data, player)]));
   const playedValues = Object.values(series).flat();
 
   return {
@@ -570,6 +584,10 @@ function matchTimestamp(match) {
   return Number.isNaN(value) ? Number.MAX_SAFE_INTEGER : value;
 }
 
+function nextGameDisplayUntil(match) {
+  return matchTimestamp(match) + nextGameHoldMilliseconds;
+}
+
 function formatCountdown(milliseconds) {
   const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
   const days = Math.floor(totalSeconds / 86400);
@@ -590,7 +608,13 @@ function updateNextGameCountdown() {
   if (!countdown) return;
 
   const target = Number(countdown.dataset.countdownTarget);
+  const displayUntil = Number(countdown.dataset.countdownDisplayUntil);
   const remaining = target - Date.now();
+
+  if (displayUntil && Date.now() > displayUntil && currentData) {
+    renderNextGame(currentData);
+    return;
+  }
 
   if (remaining <= 0) {
     countdown.innerHTML = `
@@ -615,7 +639,7 @@ function updateNextGameCountdown() {
 function renderNextGame(data) {
   const now = Date.now();
   const next = data.matches
-    .filter((match) => matchTimestamp(match) > now)
+    .filter((match) => !match.score && nextGameDisplayUntil(match) > now)
     .sort((a, b) => matchTimestamp(a) - matchTimestamp(b) || a.id - b.id)[0];
 
   const section = document.querySelector("#nextGameSection");
@@ -626,14 +650,16 @@ function renderNextGame(data) {
 
   section.style.display = "";
   const kickoff = matchTimestamp(next);
+  const displayUntil = nextGameDisplayUntil(next);
+  const kicker = now >= kickoff ? "In progress" : "Coming up";
   document.querySelector("#nextGame").innerHTML = `
     <div class="next-game-card">
       <div class="next-game-main">
-        <div class="next-game-kicker">Coming up</div>
+        <div class="next-game-kicker">${kicker}</div>
         <h3>${next.label}</h3>
         <div class="next-game-meta">${matchDateTimeLabel(next)} · Group ${next.group} · Round ${next.round}</div>
       </div>
-      <div class="next-game-countdown" data-countdown-target="${kickoff}" aria-live="polite"></div>
+      <div class="next-game-countdown" data-countdown-target="${kickoff}" data-countdown-display-until="${displayUntil}" aria-live="polite"></div>
       <div class="next-game-predictions">
         <div class="mini-heading">Predictions</div>
         <div class="prediction-grid">
@@ -728,16 +754,36 @@ function drawChart(data, type = selectedChartType) {
   const context = canvas.getContext("2d");
   const width = canvas.width;
   const height = canvas.height;
+  const players = selectedChartPlayerList(data);
+
+  if (!players.length) {
+    drawGeekNoData(context, width, height, "Select players to show");
+    chartState = {
+      data,
+      config: { tooltipValue: () => 0 },
+      series: {},
+      pointsByPlayer: {},
+      players: [],
+      hoveredPlayer: null,
+    };
+    document.querySelector("#chartLegend").innerHTML = "";
+    const note = document.querySelector("#chartNote");
+    note.textContent = "Use the checkboxes or presets to add lines to the chart.";
+    note.hidden = false;
+    bindChartHover();
+    return;
+  }
+
   const padding = { top: 30, right: 78, bottom: 58, left: 68 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
-  const config = chartConfig(data, type);
+  const config = chartConfig(data, type, players);
   const { series, maxScore, minScore } = config;
   const scoreRange = Math.max(1, maxScore - minScore);
   const pointCount = Math.max(1, Math.max(...Object.values(series).map((values) => values.length)));
   const pointsByPlayer = {};
 
-  data.players.forEach((player) => {
+  players.forEach((player) => {
     pointsByPlayer[player] = series[player].map((value, index) => ({
       value,
       x: padding.left + (index / Math.max(1, pointCount - 1)) * chartWidth,
@@ -755,6 +801,7 @@ function drawChart(data, type = selectedChartType) {
     minScore,
     scoreRange,
     pointCount,
+    players,
     series,
     pointsByPlayer,
     hoveredPlayer: chartState?.hoveredPlayer || null,
@@ -767,7 +814,7 @@ function renderChart() {
   const canvas = document.querySelector("#progressChart");
   const context = canvas.getContext("2d");
   const tooltip = document.querySelector("#chartTooltip");
-  const { data, config, padding, chartWidth, chartHeight, maxScore, minScore, scoreRange, pointCount, series, pointsByPlayer, hoveredPlayer } = chartState;
+  const { data, config, padding, chartWidth, chartHeight, maxScore, minScore, scoreRange, pointCount, players, series, pointsByPlayer, hoveredPlayer } = chartState;
   const width = canvas.width;
   const height = canvas.height;
   const plotBottom = height - padding.bottom;
@@ -837,14 +884,14 @@ function renderChart() {
   context.fillText(config.yAxisTitle, 0, 0);
   context.restore();
 
-  data.players.forEach((player, playerIndex) => {
+  players.forEach((player) => {
     const points = pointsByPlayer[player];
-    const color = colors[playerIndex % colors.length];
+    const color = colors[data.players.indexOf(player) % colors.length];
     if (!points.length) return;
 
     context.globalAlpha = hoveredPlayer && hoveredPlayer !== player ? 0.18 : 1;
     context.strokeStyle = color;
-    context.lineWidth = hoveredPlayer === player ? 4.5 : data.players.length > 5 ? 1.8 : 2.5;
+    context.lineWidth = hoveredPlayer === player ? 4.5 : players.length > 5 ? 1.8 : 2.5;
     context.beginPath();
     drawSmoothLine(context, points);
     context.stroke();
@@ -864,11 +911,11 @@ function renderChart() {
   });
   context.globalAlpha = 1;
 
-  document.querySelector("#chartLegend").innerHTML = data.players.map((player, playerIndex) => {
+  document.querySelector("#chartLegend").innerHTML = players.map((player) => {
     const values = series[player];
     const finalValue = config.legendValue(values);
     const stateClass = hoveredPlayer === player ? "is-active" : hoveredPlayer ? "is-muted" : "";
-    return `<span class="${stateClass}" data-chart-player="${player}" data-profile-player="${player}"><i style="background:${colors[playerIndex % colors.length]}"></i>${player}: ${finalValue}</span>`;
+    return `<span class="${stateClass}" data-chart-player="${player}" data-profile-player="${player}"><i style="background:${colors[data.players.indexOf(player) % colors.length]}"></i>${player}: ${finalValue}</span>`;
   }).join("");
 
   const note = document.querySelector("#chartNote");
@@ -1273,6 +1320,101 @@ function renderGeekChartControls(data) {
   playerPicker.addEventListener("change", () => drawGeekChart(currentData));
 }
 
+function existingPresetPlayers(data, preset) {
+  return preset.players.filter((player) => data.players.includes(player));
+}
+
+function updateChartFilterControls(data) {
+  document.querySelectorAll("[data-chart-player-filter]").forEach((input) => {
+    input.checked = selectedChartPlayers.has(input.value);
+  });
+
+  document.querySelectorAll("[data-chart-preset]").forEach((input) => {
+    const preset = chartPlayerPresets.find((item) => item.label === input.value);
+    const players = preset ? existingPresetPlayers(data, preset) : [];
+    input.checked = players.length > 0 && players.every((player) => selectedChartPlayers.has(player));
+  });
+}
+
+function redrawChartWithFilters(data) {
+  updateChartFilterControls(data);
+  chartState = { ...chartState, hoveredPlayer: null };
+  document.querySelector("#chartTooltip").classList.remove("is-visible");
+  drawChart(data, selectedChartType);
+}
+
+function renderChartPlayerControls(data) {
+  if (!selectedChartPlayers.size) {
+    selectedChartPlayers = new Set(data.players);
+  }
+
+  const presetControls = document.querySelector("#chartPresetControls");
+  const playerControls = document.querySelector("#chartPlayerControls");
+
+  presetControls.innerHTML = chartPlayerPresets.map((preset) => {
+    const players = existingPresetPlayers(data, preset);
+    const disabledClass = players.length ? "" : " is-disabled";
+    return `
+      <label class="chart-filter${disabledClass}" title="${preset.players.join(", ")}">
+        <input type="checkbox" value="${preset.label}" data-chart-preset ${players.length ? "" : "disabled"}>
+        <span>${preset.label}</span>
+      </label>
+    `;
+  }).join("");
+
+  playerControls.innerHTML = data.players.map((player) => `
+    <label class="chart-filter">
+      <input type="checkbox" value="${player}" data-chart-player-filter>
+      <span>${player}</span>
+    </label>
+  `).join("");
+
+  updateChartFilterControls(data);
+}
+
+function bindChartPlayerControls(data) {
+  const controls = document.querySelector(".chart-player-controls");
+  if (controls.dataset.bound) return;
+  controls.dataset.bound = "true";
+
+  controls.addEventListener("change", (event) => {
+    const playerInput = event.target.closest("[data-chart-player-filter]");
+    if (playerInput) {
+      if (playerInput.checked) {
+        selectedChartPlayers.add(playerInput.value);
+      } else {
+        selectedChartPlayers.delete(playerInput.value);
+      }
+      redrawChartWithFilters(currentData);
+      return;
+    }
+
+    const presetInput = event.target.closest("[data-chart-preset]");
+    if (!presetInput) return;
+
+    const preset = chartPlayerPresets.find((item) => item.label === presetInput.value);
+    if (!preset) return;
+    existingPresetPlayers(currentData, preset).forEach((player) => {
+      if (presetInput.checked) {
+        selectedChartPlayers.add(player);
+      } else {
+        selectedChartPlayers.delete(player);
+      }
+    });
+    redrawChartWithFilters(currentData);
+  });
+
+  document.querySelector("#selectAllChartPlayers").addEventListener("click", () => {
+    selectedChartPlayers = new Set(currentData.players);
+    redrawChartWithFilters(currentData);
+  });
+
+  document.querySelector("#deselectAllChartPlayers").addEventListener("click", () => {
+    selectedChartPlayers = new Set();
+    redrawChartWithFilters(currentData);
+  });
+}
+
 function bindChartHover() {
   const canvas = document.querySelector("#progressChart");
   const legend = document.querySelector("#chartLegend");
@@ -1280,7 +1422,7 @@ function bindChartHover() {
   canvas.dataset.hoverBound = "true";
 
   canvas.addEventListener("mousemove", (event) => {
-    if (!chartState) return;
+    if (!chartState || !chartState.players.length) return;
 
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
@@ -1313,6 +1455,7 @@ function bindChartHover() {
     chartState.hoveredPlayer = null;
     document.querySelector("#chartTooltip").classList.remove("is-visible");
     canvas.style.cursor = "default";
+    if (!chartState.players.length) return;
     renderChart();
   });
 
@@ -1591,10 +1734,12 @@ fetch("/api/data")
     renderLeaderboard(data);
     renderPlayerProfilePicker(data);
     renderMatches(data);
+    renderChartPlayerControls(data);
     drawChart(data, selectedChartType);
     renderGeekChartControls(data);
     renderSelectedStat(data);
     bindChartPicker();
+    bindChartPlayerControls(data);
     bindProfileLinks();
     document.querySelector("#statPicker").addEventListener("change", () => renderSelectedStat(currentData));
   });

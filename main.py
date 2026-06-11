@@ -8,7 +8,6 @@ from urllib.request import urlopen
 
 import pandas as pd
 
-
 ROOT = Path(__file__).parent
 INPUT_FILE = ROOT / "input.xlsx"
 OUTPUT_FILE = ROOT / "site" / "data.json"
