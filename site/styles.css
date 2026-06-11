@@ -96,6 +96,17 @@ select {
   cursor: pointer;
 }
 
+.chart-filter-preset {
+  border-color: #c8d8e4;
+  background: #f3f8fb;
+  color: #223447;
+  font-weight: 700;
+}
+
+.chart-filter-player {
+  background: #fff;
+}
+
 .chart-filter input {
   margin: 0;
   accent-color: #0b7a45;
@@ -104,6 +115,11 @@ select {
 .chart-filter:has(input:checked) {
   border-color: #9fc6ab;
   background: #eaf5ee;
+}
+
+.chart-filter-preset:has(input:checked) {
+  border-color: #8fb2c7;
+  background: #e3f0f6;
 }
 
 .chart-filter.is-disabled {

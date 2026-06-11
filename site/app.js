@@ -1355,7 +1355,7 @@ function renderChartPlayerControls(data) {
     const players = existingPresetPlayers(data, preset);
     const disabledClass = players.length ? "" : " is-disabled";
     return `
-      <label class="chart-filter${disabledClass}" title="${preset.players.join(", ")}">
+      <label class="chart-filter chart-filter-preset${disabledClass}" title="${preset.players.join(", ")}">
         <input type="checkbox" value="${preset.label}" data-chart-preset ${players.length ? "" : "disabled"}>
         <span>${preset.label}</span>
       </label>
@@ -1363,7 +1363,7 @@ function renderChartPlayerControls(data) {
   }).join("");
 
   playerControls.innerHTML = data.players.map((player) => `
-    <label class="chart-filter">
+    <label class="chart-filter chart-filter-player">
       <input type="checkbox" value="${player}" data-chart-player-filter>
       <span>${player}</span>
     </label>
