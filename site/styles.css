@@ -51,6 +51,16 @@ select {
   font: inherit;
 }
 
+.chart-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.chart-controls select:disabled {
+  color: #8a948e;
+  background: #f5f8f6;
+}
+
 section {
   margin: 0 0 28px;
   padding: 18px;
@@ -629,6 +639,11 @@ code {
   select {
     width: 100%;
     margin-top: 8px;
+  }
+
+  .chart-controls {
+    display: grid;
+    gap: 8px;
   }
 
   .stat-control {

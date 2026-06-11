@@ -933,6 +933,331 @@ function drawSmoothLine(context, points) {
   }
 }
 
+function predictionDistance(match, player) {
+  const actual = parseScore(match.score);
+  const predicted = parseScore(match.predictions?.[player]);
+  if (!actual || !predicted) return null;
+  return Math.abs(actual[0] - predicted[0]) + Math.abs(actual[1] - predicted[1]);
+}
+
+function playerPlayedRows(data, player) {
+  return playedMatchesByDate(data).map((match) => ({
+    match,
+    points: match.points[player] || 0,
+    distance: predictionDistance(match, player),
+    prediction: match.predictions?.[player] || "",
+  }));
+}
+
+function drawCanvasFrame(context, width, height) {
+  context.clearRect(0, 0, width, height);
+  context.font = "13px Arial";
+  context.lineWidth = 1;
+  context.strokeStyle = "#edf2ee";
+  context.fillStyle = "#637069";
+}
+
+function drawGeekNoData(context, width, height, message) {
+  drawCanvasFrame(context, width, height);
+  context.fillStyle = "#637069";
+  context.font = "bold 15px Arial";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText(message, width / 2, height / 2);
+}
+
+function drawGeekDistribution(context, data, width, height) {
+  const played = playedMatchesByDate(data);
+  if (!played.length) {
+    drawGeekNoData(context, width, height, "No played games yet");
+    return "Counts of 0, 2, 5, 7 and 10 point results per player.";
+  }
+
+  const padding = { top: 34, right: 34, bottom: 78, left: 56 };
+  const buckets = [0, 2, 5, 7, 10];
+  const bucketColors = { 0: "#c0362c", 2: "#f0b57a", 5: "#f3d47d", 7: "#286b9a", 10: "#0b7a45" };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const maxCount = played.length;
+  const barGap = 14;
+  const barWidth = Math.max(18, (chartWidth - barGap * (data.players.length - 1)) / data.players.length);
+
+  drawCanvasFrame(context, width, height);
+  for (let tick = 0; tick <= 4; tick += 1) {
+    const value = Math.round((maxCount / 4) * tick);
+    const y = height - padding.bottom - (value / Math.max(1, maxCount)) * chartHeight;
+    context.strokeStyle = "#edf2ee";
+    context.beginPath();
+    context.moveTo(padding.left, y);
+    context.lineTo(width - padding.right, y);
+    context.stroke();
+    context.fillStyle = "#637069";
+    context.textAlign = "right";
+    context.textBaseline = "middle";
+    context.fillText(String(value), padding.left - 10, y);
+  }
+
+  data.players.forEach((player, playerIndex) => {
+    const counts = Object.fromEntries(buckets.map((bucket) => [bucket, 0]));
+    played.forEach((match) => {
+      counts[match.points[player] || 0] += 1;
+    });
+    const x = padding.left + playerIndex * (barWidth + barGap);
+    let y = height - padding.bottom;
+    buckets.forEach((bucket) => {
+      const segmentHeight = (counts[bucket] / Math.max(1, maxCount)) * chartHeight;
+      context.fillStyle = bucketColors[bucket];
+      context.fillRect(x, y - segmentHeight, barWidth, segmentHeight);
+      y -= segmentHeight;
+    });
+    context.fillStyle = "#637069";
+    context.textAlign = "right";
+    context.textBaseline = "middle";
+    context.save();
+    context.translate(x + barWidth / 2, height - padding.bottom + 12);
+    context.rotate(-Math.PI / 4);
+    context.fillText(player, 0, 0);
+    context.restore();
+  });
+
+  buckets.forEach((bucket, index) => {
+    const x = padding.left + index * 82;
+    const y = 16;
+    context.fillStyle = bucketColors[bucket];
+    context.fillRect(x, y, 18, 6);
+    context.fillStyle = "#637069";
+    context.textAlign = "left";
+    context.textBaseline = "middle";
+    context.fillText(`${bucket} pts`, x + 24, y + 3);
+  });
+
+  return "Stacked bars show how each player gets their points: spikes, steady partial hits, or zeros.";
+}
+
+function radarMetrics(data, player) {
+  const rows = playerPlayedRows(data, player);
+  const playedCount = rows.length;
+  const exact = rows.filter((row) => row.points === 10).length;
+  const anyPoints = rows.filter((row) => row.points > 0).length;
+  const average = playedCount ? rows.reduce((total, row) => total + row.points, 0) / playedCount : 0;
+  const lastFive = rows.slice(-5);
+  const lastFiveAverage = lastFive.length ? lastFive.reduce((total, row) => total + row.points, 0) / lastFive.length : 0;
+  const filled = data.matches.filter((match) => match.predictions?.[player]).length;
+
+  return [
+    { label: "Exact", value: playedCount ? (exact / playedCount) * 100 : 0 },
+    { label: "Any pts", value: playedCount ? (anyPoints / playedCount) * 100 : 0 },
+    { label: "Avg pts", value: (average / 10) * 100 },
+    { label: "Last 5", value: (lastFiveAverage / 10) * 100 },
+    { label: "Filled", value: data.matches.length ? (filled / data.matches.length) * 100 : 0 },
+  ];
+}
+
+function drawGeekRadar(context, data, player, width, height) {
+  const metrics = radarMetrics(data, player);
+  const center = { x: width / 2, y: height / 2 + 8 };
+  const radius = Math.min(width, height) * 0.32;
+
+  drawCanvasFrame(context, width, height);
+  for (let ring = 1; ring <= 4; ring += 1) {
+    context.strokeStyle = "#e6eee8";
+    context.beginPath();
+    metrics.forEach((metric, index) => {
+      const angle = -Math.PI / 2 + (index / metrics.length) * Math.PI * 2;
+      const r = radius * (ring / 4);
+      const x = center.x + Math.cos(angle) * r;
+      const y = center.y + Math.sin(angle) * r;
+      if (index === 0) context.moveTo(x, y);
+      else context.lineTo(x, y);
+    });
+    context.closePath();
+    context.stroke();
+  }
+
+  metrics.forEach((metric, index) => {
+    const angle = -Math.PI / 2 + (index / metrics.length) * Math.PI * 2;
+    const x = center.x + Math.cos(angle) * radius;
+    const y = center.y + Math.sin(angle) * radius;
+    context.strokeStyle = "#edf2ee";
+    context.beginPath();
+    context.moveTo(center.x, center.y);
+    context.lineTo(x, y);
+    context.stroke();
+    context.fillStyle = "#637069";
+    context.font = "bold 12px Arial";
+    context.textAlign = x < center.x - 8 ? "right" : x > center.x + 8 ? "left" : "center";
+    context.textBaseline = y < center.y ? "bottom" : "top";
+    context.fillText(metric.label, x, y);
+  });
+
+  context.beginPath();
+  metrics.forEach((metric, index) => {
+    const angle = -Math.PI / 2 + (index / metrics.length) * Math.PI * 2;
+    const r = radius * (metric.value / 100);
+    const x = center.x + Math.cos(angle) * r;
+    const y = center.y + Math.sin(angle) * r;
+    if (index === 0) context.moveTo(x, y);
+    else context.lineTo(x, y);
+  });
+  context.closePath();
+  context.fillStyle = "rgba(11, 122, 69, 0.18)";
+  context.strokeStyle = "#0b7a45";
+  context.lineWidth = 2.5;
+  context.fill();
+  context.stroke();
+
+  context.fillStyle = "#17201b";
+  context.font = "bold 16px Arial";
+  context.textAlign = "center";
+  context.textBaseline = "top";
+  context.fillText(player, center.x, 18);
+
+  return "Radar values are normalized to 0-100: exact rate, games with points, average points, last-5 average, and filled predictions.";
+}
+
+function drawGeekVolatility(context, data, player, width, height) {
+  const rows = playerPlayedRows(data, player).slice(-20);
+  if (!rows.length) {
+    drawGeekNoData(context, width, height, "No played games yet");
+    return "Points per played game for the selected player.";
+  }
+
+  const padding = { top: 34, right: 34, bottom: 58, left: 52 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const barGap = 6;
+  const barWidth = Math.max(10, (chartWidth - barGap * (rows.length - 1)) / rows.length);
+  const average = rows.reduce((total, row) => total + row.points, 0) / rows.length;
+
+  drawCanvasFrame(context, width, height);
+  for (let tick = 0; tick <= 5; tick += 1) {
+    const value = tick * 2;
+    const y = height - padding.bottom - (value / 10) * chartHeight;
+    context.strokeStyle = "#edf2ee";
+    context.beginPath();
+    context.moveTo(padding.left, y);
+    context.lineTo(width - padding.right, y);
+    context.stroke();
+    context.fillStyle = "#637069";
+    context.textAlign = "right";
+    context.textBaseline = "middle";
+    context.fillText(String(value), padding.left - 10, y);
+  }
+
+  rows.forEach((row, index) => {
+    const x = padding.left + index * (barWidth + barGap);
+    const barHeight = (row.points / 10) * chartHeight;
+    context.fillStyle = pointClass(row.points, true) === "score-10" ? "#0b7a45" : colors[index % colors.length];
+    context.globalAlpha = 0.86;
+    context.fillRect(x, height - padding.bottom - barHeight, barWidth, barHeight);
+    context.globalAlpha = 1;
+    context.fillStyle = "#637069";
+    context.textAlign = "center";
+    context.textBaseline = "top";
+    context.fillText(String(row.match.id), x + barWidth / 2, height - padding.bottom + 12);
+  });
+
+  const averageY = height - padding.bottom - (average / 10) * chartHeight;
+  context.strokeStyle = "#17201b";
+  context.setLineDash([6, 5]);
+  context.beginPath();
+  context.moveTo(padding.left, averageY);
+  context.lineTo(width - padding.right, averageY);
+  context.stroke();
+  context.setLineDash([]);
+  context.fillStyle = "#17201b";
+  context.textAlign = "right";
+  context.textBaseline = "bottom";
+  context.fillText(`avg ${average.toFixed(1)}`, width - padding.right, averageY - 5);
+
+  return `Volatility shows ${player}'s points per played game, capped to the latest 20 games.`;
+}
+
+function drawGeekDistance(context, data, width, height) {
+  const played = playedMatchesByDate(data);
+  const rows = data.players.map((player) => {
+    const distances = played
+      .map((match) => predictionDistance(match, player))
+      .filter((value) => value !== null);
+    const average = distances.length ? distances.reduce((total, value) => total + value, 0) / distances.length : null;
+    return { player, average, count: distances.length };
+  }).filter((row) => row.average !== null)
+    .sort((a, b) => a.average - b.average || a.player.localeCompare(b.player));
+
+  if (!rows.length) {
+    drawGeekNoData(context, width, height, "No comparable predictions yet");
+    return "Average score distance needs played matches with filled score predictions.";
+  }
+
+  const padding = { top: 34, right: 34, bottom: 78, left: 56 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const maxDistance = Math.max(1, Math.ceil(Math.max(...rows.map((row) => row.average))));
+  const barGap = 14;
+  const barWidth = Math.max(18, (chartWidth - barGap * (rows.length - 1)) / rows.length);
+
+  drawCanvasFrame(context, width, height);
+  for (let tick = 0; tick <= maxDistance; tick += 1) {
+    const y = height - padding.bottom - (tick / maxDistance) * chartHeight;
+    context.strokeStyle = "#edf2ee";
+    context.beginPath();
+    context.moveTo(padding.left, y);
+    context.lineTo(width - padding.right, y);
+    context.stroke();
+    context.fillStyle = "#637069";
+    context.textAlign = "right";
+    context.textBaseline = "middle";
+    context.fillText(String(tick), padding.left - 10, y);
+  }
+
+  rows.forEach((row, index) => {
+    const x = padding.left + index * (barWidth + barGap);
+    const barHeight = (row.average / maxDistance) * chartHeight;
+    context.fillStyle = colors[index % colors.length];
+    context.fillRect(x, height - padding.bottom - barHeight, barWidth, barHeight);
+    context.fillStyle = "#17201b";
+    context.textAlign = "center";
+    context.textBaseline = "bottom";
+    context.fillText(row.average.toFixed(1), x + barWidth / 2, height - padding.bottom - barHeight - 5);
+    context.fillStyle = "#637069";
+    context.textBaseline = "middle";
+    context.save();
+    context.translate(x + barWidth / 2, height - padding.bottom + 12);
+    context.rotate(-Math.PI / 4);
+    context.fillText(row.player, 0, 0);
+    context.restore();
+  });
+
+  return "Lower is better: average absolute goal distance from the actual score.";
+}
+
+function drawGeekChart(data) {
+  const canvas = document.querySelector("#geekChart");
+  const context = canvas.getContext("2d");
+  const type = document.querySelector("#geekChartPicker").value;
+  const player = document.querySelector("#geekPlayerPicker").value;
+  const note = document.querySelector("#geekChartNote");
+  const playerPicker = document.querySelector("#geekPlayerPicker");
+  let noteText = "";
+
+  playerPicker.disabled = type === "distribution" || type === "distance";
+  if (type === "distribution") noteText = drawGeekDistribution(context, data, canvas.width, canvas.height);
+  if (type === "radar") noteText = drawGeekRadar(context, data, player, canvas.width, canvas.height);
+  if (type === "volatility") noteText = drawGeekVolatility(context, data, player, canvas.width, canvas.height);
+  if (type === "distance") noteText = drawGeekDistance(context, data, canvas.width, canvas.height);
+
+  note.textContent = noteText;
+}
+
+function renderGeekChartControls(data) {
+  const playerPicker = document.querySelector("#geekPlayerPicker");
+  playerPicker.innerHTML = data.players.map((player) => `<option value="${player}">${player}</option>`).join("");
+  playerPicker.value = data.leaderboard[0]?.player || data.players[0];
+  drawGeekChart(data);
+  document.querySelector("#geekChartPicker").addEventListener("change", () => drawGeekChart(currentData));
+  playerPicker.addEventListener("change", () => drawGeekChart(currentData));
+}
+
 function bindChartHover() {
   const canvas = document.querySelector("#progressChart");
   const legend = document.querySelector("#chartLegend");
@@ -1252,6 +1577,7 @@ fetch("/api/data")
     renderPlayerProfilePicker(data);
     renderMatches(data);
     drawChart(data, selectedChartType);
+    renderGeekChartControls(data);
     renderSelectedStat(data);
     bindChartPicker();
     bindProfileLinks();

@@ -42,8 +42,8 @@
 
       <section>
         <div class="section-head">
-          <h2>Progress Per Game</h2>
-          <select id="chartPicker" aria-label="Choose progress chart">
+          <h2>Progress Charts</h2>
+          <select id="chartPicker" aria-label="Choose chart">
             <option value="full">Full tournament</option>
             <option value="lastFive">Last 5 games</option>
             <option value="momentum">Momentum</option>
@@ -55,6 +55,25 @@
         </div>
         <p id="chartNote" class="chart-note"></p>
         <div id="chartLegend" class="chart-legend"></div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Geek Charts</h2>
+          <div class="chart-controls">
+            <select id="geekChartPicker" aria-label="Choose geek chart">
+              <option value="distribution">Points distribution</option>
+              <option value="radar">Prediction accuracy radar</option>
+              <option value="volatility">Volatility</option>
+              <option value="distance">Prediction distance</option>
+            </select>
+            <select id="geekPlayerPicker" aria-label="Choose player"></select>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="geekChart" width="1000" height="420"></canvas>
+        </div>
+        <p id="geekChartNote" class="chart-note"></p>
       </section>
 
       <section>
