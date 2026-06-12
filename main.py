@@ -16,6 +16,7 @@ GOOGLE_SHEET_ID = os.environ.get("GOOGLE_SHEET_ID", "1fozCeduyiHd2W66pqQHGKjAPH5
 GOOGLE_SHEET_EXPORT_URL = f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}/export?format=xlsx"
 MATCH_COLUMNS = {"API Match ID", "Status", "Datum", "Tijd", "ID", "Country_1", "Country_2", "Group", "Round", "Score"}
 PLAYER_START_COLUMN_INDEX = 10
+EXCLUDED_PLAYER_NAMES = {"API Match ID", "Status"}
 
 
 def parse_score(score):
@@ -49,6 +50,11 @@ def value_from_row(row, column, default=""):
         return default
     value = row[column]
     return default if pd.isna(value) else value
+
+
+def is_player_column(column):
+    name = str(column).strip()
+    return name and name not in MATCH_COLUMNS and name not in EXCLUDED_PLAYER_NAMES and not name.startswith("Unnamed")
 
 
 def format_date(value):
@@ -148,12 +154,12 @@ def build_data():
     match_players = [
         str(column).strip()
         for column in df.columns[PLAYER_START_COLUMN_INDEX:]
-        if str(column) not in MATCH_COLUMNS and not str(column).startswith("Unnamed")
+        if is_player_column(column)
     ]
     actual_winner, winner_predictions = read_winner_predictions(workbook)
     players = list(match_players)
     for player in winner_predictions:
-        if player not in players:
+        if player not in EXCLUDED_PLAYER_NAMES and player not in players:
             players.append(player)
 
     matches = []

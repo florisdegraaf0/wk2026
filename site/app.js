@@ -1,5 +1,6 @@
 const colors = ["#0b7a45", "#c0362c", "#286b9a", "#c58a24", "#6f42c1", "#222222", "#d14f7b", "#00878f", "#7a5b2e", "#5b8f22", "#a24416", "#3858b8"];
 const matchTimeZoneOffset = "+02:00";
+const excludedPlayerNames = new Set(["API Match ID", "Status"]);
 let currentData;
 let chartState;
 let selectedChartType = "full";
@@ -20,6 +21,22 @@ function sortValues(values) {
     if (!Number.isNaN(numberA) && !Number.isNaN(numberB)) return numberA - numberB;
     return String(a).localeCompare(String(b));
   });
+}
+
+function normalizeData(data) {
+  const players = data.players.filter((player) => !excludedPlayerNames.has(player));
+  const playerSet = new Set(players);
+  data.players = players;
+  data.leaderboard = data.leaderboard.filter((row) => playerSet.has(row.player));
+  data.progress = Object.fromEntries(Object.entries(data.progress).filter(([player]) => playerSet.has(player)));
+  if (data.winner?.predictions) {
+    data.winner.predictions = Object.fromEntries(Object.entries(data.winner.predictions).filter(([player]) => playerSet.has(player)));
+  }
+  data.matches.forEach((match) => {
+    match.points = Object.fromEntries(Object.entries(match.points || {}).filter(([player]) => playerSet.has(player)));
+    match.predictions = Object.fromEntries(Object.entries(match.predictions || {}).filter(([player]) => playerSet.has(player)));
+  });
+  return data;
 }
 
 function pointClass(points, played) {
@@ -599,6 +616,10 @@ function isInProgressMatch(match, now = Date.now()) {
   return !isFinishedMatch(match) && matchTimestamp(match) <= now;
 }
 
+function isNederlandMatch(match) {
+  return [match.country1, match.country2].some((country) => String(country || "").trim().toLowerCase() === "nederland");
+}
+
 function formatCountdown(milliseconds) {
   const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
   const days = Math.floor(totalSeconds / 86400);
@@ -653,6 +674,7 @@ function renderNextGame(data) {
     .sort((a, b) => matchTimestamp(a) - matchTimestamp(b) || a.id - b.id)[0];
 
   const section = document.querySelector("#nextGameSection");
+  document.body.classList.toggle("oranje-mode", Boolean(next && isNederlandMatch(next)));
   if (!next) {
     section.style.display = "none";
     return;
@@ -1740,6 +1762,7 @@ fetch("/api/data")
   })
   .catch(() => fetch("data.json").then((response) => response.json()))
   .then((data) => {
+    data = normalizeData(data);
     currentData = data;
     renderNextGame(data);
     renderLeaderboard(data);

@@ -9,6 +9,23 @@ body {
   background: linear-gradient(180deg, #eef6ef, #ffffff);
 }
 
+body.oranje-mode {
+  background:
+    radial-gradient(circle at 12% 88px, rgba(255, 123, 0, 0.24) 0 7px, transparent 8px),
+    radial-gradient(circle at 88% 156px, rgba(255, 183, 77, 0.28) 0 10px, transparent 11px),
+    linear-gradient(180deg, #fff1dd, #ffffff 360px);
+}
+
+body.oranje-mode::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: 12px;
+  z-index: 5;
+  pointer-events: none;
+  background: repeating-linear-gradient(90deg, #ff7b00 0 36px, #fff 36px 48px, #21468b 48px 72px);
+}
+
 main {
   width: min(1000px, calc(100% - 32px));
   margin: 0 auto;
@@ -16,7 +33,29 @@ main {
 }
 
 header {
+  position: relative;
   margin-bottom: 28px;
+}
+
+body.oranje-mode header {
+  padding: 14px 16px;
+  border: 1px solid #ffd4a3;
+  border-radius: 8px;
+  background: linear-gradient(120deg, rgba(255, 123, 0, 0.16), rgba(255, 255, 255, 0.88));
+}
+
+body.oranje-mode header::after {
+  content: "Hup Nederland";
+  position: absolute;
+  right: 16px;
+  top: 14px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #ff7b00;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 h1,
@@ -153,6 +192,10 @@ section {
   background: #fff;
 }
 
+body.oranje-mode section {
+  border-color: #f5c186;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -217,10 +260,22 @@ table {
   box-shadow: 0 8px 22px rgba(24, 64, 42, 0.08);
 }
 
+body.oranje-mode .next-game-card {
+  border-color: #ffb366;
+  background:
+    linear-gradient(135deg, rgba(255, 123, 0, 0.16), rgba(255, 255, 255, 0.94)),
+    repeating-linear-gradient(-45deg, transparent 0 18px, rgba(255, 123, 0, 0.08) 18px 24px);
+  box-shadow: inset 0 0 0 2px rgba(255, 123, 0, 0.08), 0 8px 22px rgba(148, 78, 0, 0.1);
+}
+
 .next-game-card h3 {
   margin: 6px 0;
   font-size: 28px;
   line-height: 1.1;
+}
+
+body.oranje-mode .next-game-card h3 {
+  color: #b34800;
 }
 
 .next-game-meta {
@@ -281,6 +336,11 @@ table {
 .prediction-card-next {
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.86);
+}
+
+body.oranje-mode .prediction-card-next {
+  border: 1px solid #ffd4a3;
+  background: rgba(255, 248, 239, 0.9);
 }
 
 .match-summary {
@@ -699,6 +759,12 @@ code {
     display: block;
   }
 
+  body.oranje-mode header::after {
+    position: static;
+    display: inline-flex;
+    margin-top: 8px;
+  }
+
   .next-game-card {
     grid-template-columns: 1fr;
     padding: 14px;
@@ -759,6 +825,80 @@ code {
   .profile-table {
     table-layout: auto;
     font-size: 13px;
+  }
+
+  .movers-table,
+  .movers-table thead,
+  .movers-table tbody,
+  .movers-table tr,
+  .movers-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .movers-table {
+    table-layout: auto;
+  }
+
+  .movers-table thead {
+    display: none;
+  }
+
+  .movers-table tbody {
+    display: grid;
+    gap: 10px;
+  }
+
+  .movers-table tr {
+    padding: 10px 12px;
+    border: 1px solid #e6eee8;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .movers-table td {
+    padding: 0;
+    border: 0;
+  }
+
+  .movers-table td:first-child {
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+
+  .movers-table td:nth-child(n + 2) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    width: calc(33.333% - 6px);
+    min-height: 28px;
+    margin-right: 6px;
+    font-size: 13px;
+    vertical-align: top;
+  }
+
+  .movers-table td:nth-child(2)::before {
+    content: "Move";
+  }
+
+  .movers-table td:nth-child(3)::before {
+    content: "From to";
+  }
+
+  .movers-table td:nth-child(4)::before {
+    content: "Points";
+  }
+
+  .movers-table td:nth-child(n + 2)::before {
+    margin-right: 8px;
+    color: #637069;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .movers-table .mover {
+    flex: 0 0 auto;
   }
 
   #matchHead {
