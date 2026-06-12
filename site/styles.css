@@ -709,26 +709,33 @@ canvas {
 }
 
 .score-chip.score-10 {
-  color: #fff;
-  background: #0b7a45;
+  color: #075332;
+  border: 1px solid #b9d8c3;
+  background: #e9f4ed;
 }
 
 .score-chip.score-7 {
-  color: #fff;
-  background: #286b9a;
+  color: #24526f;
+  border: 1px solid #bfd4e2;
+  background: #edf5fa;
 }
 
 .score-chip.score-5 {
-  background: #f3d47d;
+  color: #6b5720;
+  border: 1px solid #e8d89d;
+  background: #fbf5dc;
 }
 
 .score-chip.score-2 {
-  background: #f0b57a;
+  color: #7a4b1c;
+  border: 1px solid #e9c8a4;
+  background: #fbf0e5;
 }
 
 .score-chip.score-0 {
-  color: #fff;
-  background: #c0362c;
+  color: #8d312c;
+  border: 1px solid #e2b7b4;
+  background: #faeeee;
 }
 
 .score-chip.score-unplayed {
@@ -850,7 +857,10 @@ code {
   }
 
   .movers-table tr {
-    padding: 10px 12px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px 10px;
+    padding: 12px;
     border: 1px solid #e6eee8;
     border-radius: 8px;
     background: #fff;
@@ -862,19 +872,25 @@ code {
   }
 
   .movers-table td:first-child {
-    margin-bottom: 8px;
+    grid-column: 1 / -1;
     font-weight: 700;
+    font-size: 16px;
   }
 
   .movers-table td:nth-child(n + 2) {
-    display: inline-flex;
+    display: grid;
+    grid-template-rows: auto minmax(24px, auto);
     align-items: center;
-    justify-content: space-between;
-    width: calc(33.333% - 6px);
-    min-height: 28px;
-    margin-right: 6px;
+    justify-items: start;
+    width: auto;
+    min-width: 0;
+    min-height: 48px;
+    margin-right: 0;
+    padding: 7px 8px;
+    border-radius: 6px;
+    background: #f8fbf9;
     font-size: 13px;
-    vertical-align: top;
+    text-align: left;
   }
 
   .movers-table td:nth-child(2)::before {
@@ -882,7 +898,7 @@ code {
   }
 
   .movers-table td:nth-child(3)::before {
-    content: "From to";
+    content: "Rank";
   }
 
   .movers-table td:nth-child(4)::before {
@@ -890,7 +906,7 @@ code {
   }
 
   .movers-table td:nth-child(n + 2)::before {
-    margin-right: 8px;
+    margin: 0 0 3px;
     color: #637069;
     font-size: 11px;
     font-weight: 700;
@@ -899,6 +915,12 @@ code {
 
   .movers-table .mover {
     flex: 0 0 auto;
+    justify-self: start;
+  }
+
+  .movers-table td:nth-child(3),
+  .movers-table td:nth-child(4) {
+    text-align: left;
   }
 
   #matchHead {
