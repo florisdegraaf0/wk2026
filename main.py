@@ -14,7 +14,8 @@ OUTPUT_FILE = ROOT / "site" / "data.json"
 WINNER_POINTS = 50
 GOOGLE_SHEET_ID = os.environ.get("GOOGLE_SHEET_ID", "1fozCeduyiHd2W66pqQHGKjAPH5zBtczB24yjBeGOyK8")
 GOOGLE_SHEET_EXPORT_URL = f"https://docs.google.com/spreadsheets/d/{GOOGLE_SHEET_ID}/export?format=xlsx"
-MATCH_COLUMNS = {"Datum", "Tijd", "ID", "Country_1", "Country_2", "Group", "Round", "Score"}
+MATCH_COLUMNS = {"API Match ID", "Status", "Datum", "Tijd", "ID", "Country_1", "Country_2", "Group", "Round", "Score"}
+PLAYER_START_COLUMN_INDEX = 10
 
 
 def parse_score(score):
@@ -41,6 +42,13 @@ def format_value(value):
     if isinstance(value, float) and value.is_integer():
         return str(int(value))
     return str(value).strip()
+
+
+def value_from_row(row, column, default=""):
+    if column not in row.index:
+        return default
+    value = row[column]
+    return default if pd.isna(value) else value
 
 
 def format_date(value):
@@ -135,8 +143,13 @@ def read_winner_predictions(workbook):
 def build_data():
     workbook = open_input_workbook()
     df = pd.read_excel(workbook, sheet_name="Blad1")
+    df.columns = [str(column).strip() for column in df.columns]
     df = df[df["ID"].notna() & df["Country_1"].notna() & df["Country_2"].notna()]
-    match_players = [str(column) for column in df.columns if str(column) not in MATCH_COLUMNS and not str(column).startswith("Unnamed")]
+    match_players = [
+        str(column).strip()
+        for column in df.columns[PLAYER_START_COLUMN_INDEX:]
+        if str(column) not in MATCH_COLUMNS and not str(column).startswith("Unnamed")
+    ]
     actual_winner, winner_predictions = read_winner_predictions(workbook)
     players = list(match_players)
     for player in winner_predictions:
@@ -151,6 +164,8 @@ def build_data():
         score = format_score(row["Score"])
         match = {
             "id": int(row["ID"]),
+            "apiMatchId": format_value(value_from_row(row, "API Match ID")),
+            "status": format_value(value_from_row(row, "Status")).upper(),
             "label": f"{row['Country_1']} - {row['Country_2']}",
             "country1": str(row["Country_1"]),
             "country2": str(row["Country_2"]),

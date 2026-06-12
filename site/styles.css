@@ -241,6 +241,11 @@ table {
   letter-spacing: 0;
 }
 
+.next-game-kicker.is-in-progress {
+  background: linear-gradient(90deg, #c0362c, #c58a24, #0b7a45, #286b9a, #6f42c1);
+  color: #fff;
+}
+
 .next-game-countdown {
   display: grid;
   grid-template-columns: repeat(4, 64px);

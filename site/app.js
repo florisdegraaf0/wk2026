@@ -1,6 +1,5 @@
 const colors = ["#0b7a45", "#c0362c", "#286b9a", "#c58a24", "#6f42c1", "#222222", "#d14f7b", "#00878f", "#7a5b2e", "#5b8f22", "#a24416", "#3858b8"];
 const matchTimeZoneOffset = "+02:00";
-const nextGameHoldMilliseconds = 2 * 60 * 60 * 1000;
 let currentData;
 let chartState;
 let selectedChartType = "full";
@@ -584,8 +583,20 @@ function matchTimestamp(match) {
   return Number.isNaN(value) ? Number.MAX_SAFE_INTEGER : value;
 }
 
-function nextGameDisplayUntil(match) {
-  return matchTimestamp(match) + nextGameHoldMilliseconds;
+function matchStatus(match) {
+  return String(match.status || "").trim().toUpperCase();
+}
+
+function hasMatchStatus(match) {
+  return Boolean(matchStatus(match));
+}
+
+function isFinishedMatch(match) {
+  return hasMatchStatus(match) ? matchStatus(match) === "FINISHED" : Boolean(match.score);
+}
+
+function isInProgressMatch(match, now = Date.now()) {
+  return !isFinishedMatch(match) && matchTimestamp(match) <= now;
 }
 
 function formatCountdown(milliseconds) {
@@ -608,15 +619,14 @@ function updateNextGameCountdown() {
   if (!countdown) return;
 
   const target = Number(countdown.dataset.countdownTarget);
-  const displayUntil = Number(countdown.dataset.countdownDisplayUntil);
   const remaining = target - Date.now();
 
-  if (displayUntil && Date.now() > displayUntil && currentData) {
-    renderNextGame(currentData);
-    return;
-  }
-
   if (remaining <= 0) {
+    if (currentData && !countdown.closest(".next-game-card")?.querySelector(".next-game-kicker")?.classList.contains("is-in-progress")) {
+      renderNextGame(currentData);
+      return;
+    }
+
     countdown.innerHTML = `
       <span class="countdown-unit"><b>00</b><span>days</span></span>
       <span class="countdown-unit"><b>00</b><span>hours</span></span>
@@ -639,7 +649,7 @@ function updateNextGameCountdown() {
 function renderNextGame(data) {
   const now = Date.now();
   const next = data.matches
-    .filter((match) => !match.score && nextGameDisplayUntil(match) > now)
+    .filter((match) => !isFinishedMatch(match))
     .sort((a, b) => matchTimestamp(a) - matchTimestamp(b) || a.id - b.id)[0];
 
   const section = document.querySelector("#nextGameSection");
@@ -650,16 +660,17 @@ function renderNextGame(data) {
 
   section.style.display = "";
   const kickoff = matchTimestamp(next);
-  const displayUntil = nextGameDisplayUntil(next);
-  const kicker = now >= kickoff ? "In progress" : "Coming up";
+  const inProgress = isInProgressMatch(next, now);
+  const kicker = inProgress ? "In progress" : "Coming up";
+  const kickerClass = inProgress ? " is-in-progress" : "";
   document.querySelector("#nextGame").innerHTML = `
     <div class="next-game-card">
       <div class="next-game-main">
-        <div class="next-game-kicker">${kicker}</div>
+        <div class="next-game-kicker${kickerClass}">${kicker}</div>
         <h3>${next.label}</h3>
         <div class="next-game-meta">${matchDateTimeLabel(next)} · Group ${next.group} · Round ${next.round}</div>
       </div>
-      <div class="next-game-countdown" data-countdown-target="${kickoff}" data-countdown-display-until="${displayUntil}" aria-live="polite"></div>
+      <div class="next-game-countdown" data-countdown-target="${kickoff}" aria-live="polite"></div>
       <div class="next-game-predictions">
         <div class="mini-heading">Predictions</div>
         <div class="prediction-grid">
