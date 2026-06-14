@@ -13,7 +13,10 @@ body.oranje-mode {
   background:
     radial-gradient(circle at 12% 88px, rgba(255, 123, 0, 0.24) 0 7px, transparent 8px),
     radial-gradient(circle at 88% 156px, rgba(255, 183, 77, 0.28) 0 10px, transparent 11px),
+    linear-gradient(115deg, rgba(255, 123, 0, 0.1), transparent 26%, rgba(33, 70, 139, 0.06) 52%, transparent 72%),
     linear-gradient(180deg, #fff1dd, #ffffff 360px);
+  background-size: auto, auto, 240% 240%, auto;
+  animation: oranje-field-drift 18s ease-in-out infinite alternate;
 }
 
 body.oranje-mode::before {
@@ -24,6 +27,8 @@ body.oranje-mode::before {
   z-index: 5;
   pointer-events: none;
   background: repeating-linear-gradient(90deg, #ff7b00 0 36px, #fff 36px 48px, #21468b 48px 72px);
+  background-size: 144px 100%;
+  animation: oranje-tricolor-slide 7s linear infinite;
 }
 
 main {
@@ -42,6 +47,7 @@ body.oranje-mode header {
   border: 1px solid #ffd4a3;
   border-radius: 8px;
   background: linear-gradient(120deg, rgba(255, 123, 0, 0.16), rgba(255, 255, 255, 0.88));
+  box-shadow: 0 10px 26px rgba(255, 123, 0, 0.08);
 }
 
 body.oranje-mode header::after {
@@ -56,6 +62,7 @@ body.oranje-mode header::after {
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
+  animation: oranje-badge-pulse 2.8s ease-in-out infinite;
 }
 
 h1,
@@ -270,11 +277,30 @@ table {
 }
 
 body.oranje-mode .next-game-card {
+  position: relative;
+  overflow: hidden;
   border-color: #ffb366;
   background:
     linear-gradient(135deg, rgba(255, 123, 0, 0.16), rgba(255, 255, 255, 0.94)),
     repeating-linear-gradient(-45deg, transparent 0 18px, rgba(255, 123, 0, 0.08) 18px 24px);
+  background-size: auto, 48px 48px;
   box-shadow: inset 0 0 0 2px rgba(255, 123, 0, 0.08), 0 8px 22px rgba(148, 78, 0, 0.1);
+  animation: oranje-card-glow 3.6s ease-in-out infinite;
+}
+
+body.oranje-mode .next-game-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 0 38%, rgba(255, 255, 255, 0.45) 48%, transparent 58%);
+  transform: translateX(-120%);
+  animation: oranje-card-sweep 5.5s ease-in-out infinite;
+}
+
+body.oranje-mode .next-game-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .next-game-card h3 {
@@ -307,7 +333,9 @@ body.oranje-mode .next-game-card h3 {
 
 .next-game-kicker.is-in-progress {
   background: linear-gradient(90deg, #c0362c, #c58a24, #0b7a45, #286b9a, #6f42c1);
+  background-size: 220% 100%;
   color: #fff;
+  animation: oranje-kicker-flow 3s linear infinite;
 }
 
 .next-game-countdown {
@@ -648,8 +676,80 @@ h3 {
   }
 }
 
+@keyframes oranje-field-drift {
+  from {
+    background-position: 0 0, 0 0, 0% 50%, 0 0;
+  }
+
+  to {
+    background-position: 0 0, 0 0, 100% 50%, 0 0;
+  }
+}
+
+@keyframes oranje-tricolor-slide {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 144px 0;
+  }
+}
+
+@keyframes oranje-badge-pulse {
+  0%,
+  100% {
+    transform: translateY(0);
+    box-shadow: 0 0 0 rgba(255, 123, 0, 0);
+  }
+
+  50% {
+    transform: translateY(-1px);
+    box-shadow: 0 0 18px rgba(255, 123, 0, 0.28);
+  }
+}
+
+@keyframes oranje-card-glow {
+  0%,
+  100% {
+    box-shadow: inset 0 0 0 2px rgba(255, 123, 0, 0.08), 0 8px 22px rgba(148, 78, 0, 0.1);
+  }
+
+  50% {
+    box-shadow: inset 0 0 0 2px rgba(255, 123, 0, 0.16), 0 12px 30px rgba(255, 123, 0, 0.18);
+  }
+}
+
+@keyframes oranje-card-sweep {
+  0%,
+  42% {
+    transform: translateX(-120%);
+  }
+
+  72%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes oranje-kicker-flow {
+  from {
+    background-position: 0% 50%;
+  }
+
+  to {
+    background-position: 220% 50%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .movers-table tbody tr {
+  .movers-table tbody tr,
+  body.oranje-mode,
+  body.oranje-mode::before,
+  body.oranje-mode header::after,
+  body.oranje-mode .next-game-card,
+  body.oranje-mode .next-game-card::before,
+  .next-game-kicker.is-in-progress {
     animation: none;
   }
 }
