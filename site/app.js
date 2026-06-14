@@ -333,6 +333,27 @@ function playedMatchesByDate(data) {
     .sort((a, b) => matchTimestamp(a) - matchTimestamp(b) || a.id - b.id);
 }
 
+function matchTopPerformers(data, match, count = 3) {
+  return data.players
+    .map((player) => ({
+      player,
+      points: match.points[player] || 0,
+    }))
+    .sort((a, b) => b.points - a.points || a.player.localeCompare(b.player))
+    .slice(0, count);
+}
+
+function recentResultRows(data, count = 3) {
+  return playedMatchesByDate(data)
+    .slice(-count)
+    .reverse()
+    .map((match) => ({
+      match,
+      total: data.players.reduce((sum, player) => sum + (match.points[player] || 0), 0),
+      performers: matchTopPerformers(data, match),
+    }));
+}
+
 function rankMap(rows) {
   return Object.fromEntries(rowsWithRanks(rows).map((row) => [row.player, row.rank]));
 }
@@ -631,16 +652,20 @@ function formatCountdown(milliseconds) {
 
 function updateNextGameCountdown() {
   const countdown = document.querySelector("[data-countdown-target]");
-  if (!countdown) return;
+  const liveScore = document.querySelector("[data-next-game-display-until]");
+  if (!countdown && !liveScore) return;
 
-  const target = Number(countdown.dataset.countdownTarget);
-  const displayUntil = Number(countdown.dataset.countdownDisplayUntil);
-  const remaining = target - Date.now();
-
+  const displayUntilElement = countdown || liveScore;
+  const displayUntil = Number(displayUntilElement.dataset.countdownDisplayUntil || displayUntilElement.dataset.nextGameDisplayUntil);
   if (displayUntil && Date.now() > displayUntil && currentData) {
     renderNextGame(currentData);
     return;
   }
+
+  if (!countdown) return;
+
+  const target = Number(countdown.dataset.countdownTarget);
+  const remaining = target - Date.now();
 
   if (remaining <= 0) {
     if (currentData && !countdown.closest(".next-game-card")?.querySelector(".next-game-kicker")?.classList.contains("is-in-progress")) {
@@ -686,25 +711,61 @@ function renderNextGame(data) {
   const inProgress = isInProgressMatch(next, now);
   const kicker = inProgress ? "In progress" : "Coming up";
   const kickerClass = inProgress ? " is-in-progress" : "";
-  document.querySelector("#nextGame").innerHTML = `
-    <div class="next-game-card">
-      <div class="next-game-main">
-        <div class="next-game-kicker${kickerClass}">${kicker}</div>
-        <h3>${next.label}</h3>
-        <div class="next-game-meta">${matchDateTimeLabel(next)} · Group ${next.group} · Round ${next.round}</div>
+  const countdownOrScore = inProgress
+    ? `
+      <div class="next-game-live-score" data-next-game-display-until="${displayUntil}" aria-live="polite">
+        <span>Current score</span>
+        <b>${next.score || "-"}</b>
       </div>
-      <div class="next-game-countdown" data-countdown-target="${kickoff}" data-countdown-display-until="${displayUntil}" aria-live="polite"></div>
-      <div class="next-game-predictions">
-        <div class="mini-heading">Predictions</div>
-        <div class="prediction-grid">
-          ${data.players.map((player) => `
-            <div class="prediction-card prediction-card-next">
-              <b>${player}</b>
-              <span>${next.predictions?.[player] || "-"}</span>
-            </div>
-          `).join("")}
+    `
+    : `<div class="next-game-countdown" data-countdown-target="${kickoff}" data-countdown-display-until="${displayUntil}" aria-live="polite"></div>`;
+  const recentRows = recentResultRows(data);
+  document.querySelector("#nextGame").innerHTML = `
+    <div class="next-game-layout">
+      <div class="next-game-card">
+        <div class="next-game-main">
+          <div class="next-game-kicker${kickerClass}">${kicker}</div>
+          <h3>${next.label}</h3>
+          <div class="next-game-meta">${matchDateTimeLabel(next)} · Group ${next.group} · Round ${next.round}</div>
+        </div>
+        ${countdownOrScore}
+        <div class="next-game-predictions">
+          <div class="mini-heading">Predictions</div>
+          <div class="prediction-grid">
+            ${data.players.map((player) => `
+              <div class="prediction-card prediction-card-next">
+                <b>${player}</b>
+                <span>${next.predictions?.[player] || "-"}</span>
+              </div>
+            `).join("")}
+          </div>
         </div>
       </div>
+      ${recentRows.length ? `
+        <div class="recent-results-card">
+          <div class="mini-heading">Previous results</div>
+          <div class="recent-results-list">
+            ${recentRows.map((row) => `
+              <article class="recent-result">
+                <div class="recent-result-main">
+                  <div class="next-game-meta">${matchDateTimeLabel(row.match)} · Group ${row.match.group}</div>
+                  <h3>${row.match.id}. ${row.match.label}</h3>
+                  <div class="recent-result-score">${row.match.score}</div>
+                </div>
+                <div class="recent-result-points">
+                  <span>Points gained</span>
+                  <b>${row.total}</b>
+                </div>
+                <div class="recent-performers" aria-label="Best 3 performers">
+                  ${row.performers.map((performer, index) => `
+                    <span><b>${index + 1}. ${performer.player}</b> ${performer.points}</span>
+                  `).join("")}
+                </div>
+              </article>
+            `).join("")}
+          </div>
+        </div>
+      ` : ""}
     </div>
   `;
   updateNextGameCountdown();
