@@ -5,7 +5,8 @@ build/
 dist/
 wheels/
 *.egg-info
-destop.ini
+desktop.ini
+**/desktop.ini
 
 # Virtual environments
 .venv
