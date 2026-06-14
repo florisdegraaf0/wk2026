@@ -1,6 +1,7 @@
 const colors = ["#0b7a45", "#c0362c", "#286b9a", "#c58a24", "#6f42c1", "#222222", "#d14f7b", "#00878f", "#7a5b2e", "#5b8f22", "#a24416", "#3858b8"];
 const matchTimeZoneOffset = "+02:00";
 const excludedPlayerNames = new Set(["API Match ID", "Status"]);
+const nextGameHoldMilliseconds = 2 * 60 * 60 * 1000;
 let currentData;
 let chartState;
 let selectedChartType = "full";
@@ -600,20 +601,13 @@ function matchTimestamp(match) {
   return Number.isNaN(value) ? Number.MAX_SAFE_INTEGER : value;
 }
 
-function matchStatus(match) {
-  return String(match.status || "").trim().toUpperCase();
-}
-
-function hasMatchStatus(match) {
-  return Boolean(matchStatus(match));
-}
-
-function isFinishedMatch(match) {
-  return hasMatchStatus(match) ? matchStatus(match) === "FINISHED" : Boolean(match.score);
+function nextGameDisplayUntil(match) {
+  return matchTimestamp(match) + nextGameHoldMilliseconds;
 }
 
 function isInProgressMatch(match, now = Date.now()) {
-  return !isFinishedMatch(match) && matchTimestamp(match) <= now;
+  const kickoff = matchTimestamp(match);
+  return kickoff <= now && nextGameDisplayUntil(match) > now;
 }
 
 function isNederlandMatch(match) {
@@ -640,7 +634,13 @@ function updateNextGameCountdown() {
   if (!countdown) return;
 
   const target = Number(countdown.dataset.countdownTarget);
+  const displayUntil = Number(countdown.dataset.countdownDisplayUntil);
   const remaining = target - Date.now();
+
+  if (displayUntil && Date.now() > displayUntil && currentData) {
+    renderNextGame(currentData);
+    return;
+  }
 
   if (remaining <= 0) {
     if (currentData && !countdown.closest(".next-game-card")?.querySelector(".next-game-kicker")?.classList.contains("is-in-progress")) {
@@ -670,7 +670,7 @@ function updateNextGameCountdown() {
 function renderNextGame(data) {
   const now = Date.now();
   const next = data.matches
-    .filter((match) => !isFinishedMatch(match))
+    .filter((match) => nextGameDisplayUntil(match) > now)
     .sort((a, b) => matchTimestamp(a) - matchTimestamp(b) || a.id - b.id)[0];
 
   const section = document.querySelector("#nextGameSection");
@@ -682,6 +682,7 @@ function renderNextGame(data) {
 
   section.style.display = "";
   const kickoff = matchTimestamp(next);
+  const displayUntil = nextGameDisplayUntil(next);
   const inProgress = isInProgressMatch(next, now);
   const kicker = inProgress ? "In progress" : "Coming up";
   const kickerClass = inProgress ? " is-in-progress" : "";
@@ -692,7 +693,7 @@ function renderNextGame(data) {
         <h3>${next.label}</h3>
         <div class="next-game-meta">${matchDateTimeLabel(next)} · Group ${next.group} · Round ${next.round}</div>
       </div>
-      <div class="next-game-countdown" data-countdown-target="${kickoff}" aria-live="polite"></div>
+      <div class="next-game-countdown" data-countdown-target="${kickoff}" data-countdown-display-until="${displayUntil}" aria-live="polite"></div>
       <div class="next-game-predictions">
         <div class="mini-heading">Predictions</div>
         <div class="prediction-grid">
@@ -997,19 +998,8 @@ function drawSmoothLine(context, points) {
   for (let index = 0; index < points.length - 1; index += 1) {
     const current = points[index];
     const next = points[index + 1];
-    const previous = points[index - 1] || current;
-    const following = points[index + 2] || next;
-    const controlScale = 0.18;
-    const control1 = {
-      x: current.x + (next.x - previous.x) * controlScale,
-      y: current.y + (next.y - previous.y) * controlScale,
-    };
-    const control2 = {
-      x: next.x - (following.x - current.x) * controlScale,
-      y: next.y - (following.y - current.y) * controlScale,
-    };
-
-    context.bezierCurveTo(control1.x, control1.y, control2.x, control2.y, next.x, next.y);
+    const midpointX = current.x + (next.x - current.x) / 2;
+    context.bezierCurveTo(midpointX, current.y, midpointX, next.y, next.x, next.y);
   }
 }
 
@@ -1059,8 +1049,9 @@ function drawGeekDistribution(context, data, width, height) {
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
   const maxCount = played.length;
+  const rankedPlayers = data.leaderboard.map((row) => row.player).filter((player) => data.players.includes(player));
   const barGap = 14;
-  const barWidth = Math.max(18, (chartWidth - barGap * (data.players.length - 1)) / data.players.length);
+  const barWidth = Math.max(18, (chartWidth - barGap * (rankedPlayers.length - 1)) / rankedPlayers.length);
 
   drawCanvasFrame(context, width, height);
   for (let tick = 0; tick <= 4; tick += 1) {
@@ -1077,7 +1068,7 @@ function drawGeekDistribution(context, data, width, height) {
     context.fillText(String(value), padding.left - 10, y);
   }
 
-  data.players.forEach((player, playerIndex) => {
+  rankedPlayers.forEach((player, playerIndex) => {
     const counts = Object.fromEntries(buckets.map((bucket) => [bucket, 0]));
     played.forEach((match) => {
       counts[match.points[player] || 0] += 1;
