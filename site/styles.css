@@ -100,6 +100,10 @@ select {
   background: #f5f8f6;
 }
 
+.chart-controls select.is-disabled {
+  display: none;
+}
+
 .chart-player-controls {
   display: grid;
   gap: 10px;
@@ -430,19 +434,38 @@ body.oranje-mode .prediction-card-next {
   gap: 6px;
 }
 
-.recent-performers span {
+.performer-medal {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   padding: 5px 7px;
   border-radius: 999px;
+  border: 1px solid transparent;
   background: #f4f7f5;
   color: #243129;
   font-size: 12px;
 }
 
-.recent-performers b {
-  color: #0b7a45;
+.performer-medal b {
+  color: inherit;
+}
+
+.performer-medal-1 {
+  border-color: #e1c05a;
+  background: #fff8df;
+  color: #735914;
+}
+
+.performer-medal-2 {
+  border-color: #c6ccd2;
+  background: #f6f8fa;
+  color: #505b65;
+}
+
+.performer-medal-3 {
+  border-color: #d2a070;
+  background: #fff3e8;
+  color: #754922;
 }
 
 .match-summary {

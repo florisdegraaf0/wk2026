@@ -758,7 +758,7 @@ function renderNextGame(data) {
                 </div>
                 <div class="recent-performers" aria-label="Best 3 performers">
                   ${row.performers.map((performer, index) => `
-                    <span><b>${index + 1}. ${performer.player}</b> ${performer.points}</span>
+                    <span class="performer-medal performer-medal-${index + 1}"><b>${performer.player}</b> ${performer.points}</span>
                   `).join("")}
                 </div>
               </article>
@@ -1196,10 +1196,47 @@ function radarMetrics(data, player) {
   }));
 }
 
-function drawGeekRadar(context, data, player, width, height) {
+function drawRadarSeries(context, metrics, center, radius, style) {
+  context.beginPath();
+  metrics.forEach((metric, index) => {
+    const angle = -Math.PI / 2 + (index / metrics.length) * Math.PI * 2;
+    const r = radius * (metric.value / 100);
+    const x = center.x + Math.cos(angle) * r;
+    const y = center.y + Math.sin(angle) * r;
+    if (index === 0) context.moveTo(x, y);
+    else context.lineTo(x, y);
+  });
+  context.closePath();
+  context.fillStyle = style.fill;
+  context.strokeStyle = style.stroke;
+  context.lineWidth = 2.5;
+  context.fill();
+  context.stroke();
+}
+
+function drawGeekLegend(context, items, x, y) {
+  items.forEach((item, index) => {
+    const itemY = y + index * 20;
+    context.fillStyle = item.fill;
+    context.strokeStyle = item.stroke;
+    context.lineWidth = 2;
+    context.fillRect(x, itemY, 22, 8);
+    context.strokeRect(x, itemY, 22, 8);
+    context.fillStyle = "#17201b";
+    context.font = "12px Arial";
+    context.textAlign = "left";
+    context.textBaseline = "middle";
+    context.fillText(item.label, x + 30, itemY + 4);
+  });
+}
+
+function drawGeekRadar(context, data, player, comparePlayer, width, height) {
   const metrics = radarMetrics(data, player);
+  const compareMetrics = comparePlayer ? radarMetrics(data, comparePlayer) : null;
   const center = { x: width / 2, y: height / 2 + 8 };
   const radius = Math.min(width, height) * 0.32;
+  const primaryStyle = { stroke: "#0b7a45", fill: "rgba(11, 122, 69, 0.18)" };
+  const compareStyle = { stroke: "#286b9a", fill: "rgba(40, 107, 154, 0.14)" };
 
   drawCanvasFrame(context, width, height);
   for (let ring = 1; ring <= 4; ring += 1) {
@@ -1235,33 +1272,29 @@ function drawGeekRadar(context, data, player, width, height) {
     context.fillText(metric.display, x, y < center.y ? y - 16 : y + 16);
   });
 
-  context.beginPath();
-  metrics.forEach((metric, index) => {
-    const angle = -Math.PI / 2 + (index / metrics.length) * Math.PI * 2;
-    const r = radius * (metric.value / 100);
-    const x = center.x + Math.cos(angle) * r;
-    const y = center.y + Math.sin(angle) * r;
-    if (index === 0) context.moveTo(x, y);
-    else context.lineTo(x, y);
-  });
-  context.closePath();
-  context.fillStyle = "rgba(11, 122, 69, 0.18)";
-  context.strokeStyle = "#0b7a45";
-  context.lineWidth = 2.5;
-  context.fill();
-  context.stroke();
+  if (compareMetrics) drawRadarSeries(context, compareMetrics, center, radius, compareStyle);
+  drawRadarSeries(context, metrics, center, radius, primaryStyle);
 
   context.fillStyle = "#17201b";
   context.font = "bold 16px Arial";
   context.textAlign = "center";
   context.textBaseline = "top";
-  context.fillText(player, center.x, 18);
+  context.fillText(comparePlayer ? `${player} vs ${comparePlayer}` : player, center.x, 18);
+  drawGeekLegend(context, [
+    { label: player, ...primaryStyle },
+    ...(comparePlayer ? [{ label: comparePlayer, ...compareStyle }] : []),
+  ], 28, 18);
 
   return "Radar guide: Exact = exact scores in played games. Any pts = played games with at least 2 points. Avg pts = average points per played game. Last 5 avg = average points in the latest 5 played games. Each axis is normalized against the best player for that stat, so the outer ring means current best in the pool.";
 }
 
-function drawGeekVolatility(context, data, player, width, height) {
-  const rows = playerPlayedRows(data, player).slice(-20);
+function drawGeekVolatility(context, data, player, comparePlayer, width, height) {
+  const matches = playedMatchesByDate(data).slice(-20);
+  const players = [player, comparePlayer].filter(Boolean);
+  const rows = matches.map((match) => ({
+    match,
+    points: Object.fromEntries(players.map((name) => [name, match.points[name] || 0])),
+  }));
   if (!rows.length) {
     drawGeekNoData(context, width, height, "No played games yet");
     return "Points per played game for the selected player.";
@@ -1270,9 +1303,18 @@ function drawGeekVolatility(context, data, player, width, height) {
   const padding = { top: 34, right: 34, bottom: 58, left: 52 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
-  const barGap = 6;
-  const barWidth = Math.max(10, (chartWidth - barGap * (rows.length - 1)) / rows.length);
-  const average = rows.reduce((total, row) => total + row.points, 0) / rows.length;
+  const groupGap = 6;
+  const groupWidth = Math.max(14, (chartWidth - groupGap * (rows.length - 1)) / rows.length);
+  const barGap = comparePlayer ? 2 : 0;
+  const barWidth = Math.max(5, (groupWidth - barGap * (players.length - 1)) / players.length);
+  const styles = {
+    [player]: { stroke: "#0b7a45", fill: "#8fb99a" },
+    ...(comparePlayer ? { [comparePlayer]: { stroke: "#286b9a", fill: "#8daec4" } } : {}),
+  };
+  const averages = Object.fromEntries(players.map((name) => [
+    name,
+    rows.reduce((total, row) => total + row.points[name], 0) / rows.length,
+  ]));
 
   drawCanvasFrame(context, width, height);
   for (let tick = 0; tick <= 5; tick += 1) {
@@ -1290,32 +1332,41 @@ function drawGeekVolatility(context, data, player, width, height) {
   }
 
   rows.forEach((row, index) => {
-    const x = padding.left + index * (barWidth + barGap);
-    const barHeight = (row.points / 10) * chartHeight;
-    context.fillStyle = "#8fb99a";
-    context.globalAlpha = row.points === 10 ? 0.95 : 0.72;
-    context.fillRect(x, height - padding.bottom - barHeight, barWidth, barHeight);
-    context.globalAlpha = 1;
+    const groupX = padding.left + index * (groupWidth + groupGap);
+    players.forEach((name, playerIndex) => {
+      const x = groupX + playerIndex * (barWidth + barGap);
+      const points = row.points[name];
+      const barHeight = (points / 10) * chartHeight;
+      context.fillStyle = styles[name].fill;
+      context.globalAlpha = points === 10 ? 0.95 : 0.72;
+      context.fillRect(x, height - padding.bottom - barHeight, barWidth, barHeight);
+      context.globalAlpha = 1;
+    });
     context.fillStyle = "#637069";
     context.textAlign = "center";
     context.textBaseline = "top";
-    context.fillText(String(row.match.id), x + barWidth / 2, height - padding.bottom + 12);
+    context.fillText(String(row.match.id), groupX + groupWidth / 2, height - padding.bottom + 12);
   });
 
-  const averageY = height - padding.bottom - (average / 10) * chartHeight;
-  context.strokeStyle = "#17201b";
-  context.setLineDash([6, 5]);
-  context.beginPath();
-  context.moveTo(padding.left, averageY);
-  context.lineTo(width - padding.right, averageY);
-  context.stroke();
-  context.setLineDash([]);
-  context.fillStyle = "#17201b";
-  context.textAlign = "right";
-  context.textBaseline = "bottom";
-  context.fillText(`avg ${average.toFixed(1)}`, width - padding.right, averageY - 5);
+  players.forEach((name, index) => {
+    const averageY = height - padding.bottom - (averages[name] / 10) * chartHeight;
+    context.strokeStyle = styles[name].stroke;
+    context.setLineDash(index ? [3, 5] : [6, 5]);
+    context.beginPath();
+    context.moveTo(padding.left, averageY);
+    context.lineTo(width - padding.right, averageY);
+    context.stroke();
+    context.setLineDash([]);
+    context.fillStyle = styles[name].stroke;
+    context.textAlign = "right";
+    context.textBaseline = "bottom";
+    context.fillText(`avg ${averages[name].toFixed(1)}`, width - padding.right, averageY - 5 - index * 14);
+  });
+  drawGeekLegend(context, players.map((name) => ({ label: name, ...styles[name] })), 28, 18);
 
-  return `Volatility shows ${player}'s points per played game, capped to the latest 20 games.`;
+  return comparePlayer
+    ? `Volatility compares ${player}'s and ${comparePlayer}'s points per played game, capped to the latest 20 games.`
+    : `Volatility shows ${player}'s points per played game, capped to the latest 20 games.`;
 }
 
 function drawGeekDistance(context, data, width, height) {
@@ -1383,14 +1434,19 @@ function drawGeekChart(data) {
   const context = canvas.getContext("2d");
   const type = document.querySelector("#geekChartPicker").value;
   const player = document.querySelector("#geekPlayerPicker").value;
+  const comparePicker = document.querySelector("#geekComparePlayerPicker");
+  const canCompare = type === "radar" || type === "volatility";
+  const comparePlayer = canCompare && comparePicker.value && comparePicker.value !== player ? comparePicker.value : "";
   const note = document.querySelector("#geekChartNote");
   const playerPicker = document.querySelector("#geekPlayerPicker");
   let noteText = "";
 
   playerPicker.disabled = type === "distribution" || type === "distance";
+  comparePicker.disabled = !canCompare;
+  comparePicker.classList.toggle("is-disabled", !canCompare);
   if (type === "distribution") noteText = drawGeekDistribution(context, data, canvas.width, canvas.height);
-  if (type === "radar") noteText = drawGeekRadar(context, data, player, canvas.width, canvas.height);
-  if (type === "volatility") noteText = drawGeekVolatility(context, data, player, canvas.width, canvas.height);
+  if (type === "radar") noteText = drawGeekRadar(context, data, player, comparePlayer, canvas.width, canvas.height);
+  if (type === "volatility") noteText = drawGeekVolatility(context, data, player, comparePlayer, canvas.width, canvas.height);
   if (type === "distance") noteText = drawGeekDistance(context, data, canvas.width, canvas.height);
 
   note.textContent = noteText;
@@ -1398,11 +1454,22 @@ function drawGeekChart(data) {
 
 function renderGeekChartControls(data) {
   const playerPicker = document.querySelector("#geekPlayerPicker");
+  const comparePicker = document.querySelector("#geekComparePlayerPicker");
   playerPicker.innerHTML = data.players.map((player) => `<option value="${player}">${player}</option>`).join("");
+  comparePicker.innerHTML = `
+    <option value="">No comparison</option>
+    ${data.players.map((player) => `<option value="${player}">${player}</option>`).join("")}
+  `;
   playerPicker.value = data.leaderboard[0]?.player || data.players[0];
+  comparePicker.value = "";
   drawGeekChart(data);
-  document.querySelector("#geekChartPicker").addEventListener("change", () => drawGeekChart(currentData));
-  playerPicker.addEventListener("change", () => drawGeekChart(currentData));
+  const chartPicker = document.querySelector("#geekChartPicker");
+  if (!chartPicker.dataset.bound) {
+    chartPicker.dataset.bound = "true";
+    chartPicker.addEventListener("change", () => drawGeekChart(currentData));
+    playerPicker.addEventListener("change", () => drawGeekChart(currentData));
+    comparePicker.addEventListener("change", () => drawGeekChart(currentData));
+  }
 }
 
 function existingPresetPlayers(data, preset) {
