@@ -937,7 +937,7 @@ function renderPainIndex(data) {
   const topRows = rows.slice(0, 10);
   document.querySelector("#painIndex").innerHTML = `
     <p class="stat-note">Pain Index = near exacts x3 + correct winner but missed exact x2 + zero points on popular predictions x2.</p>
-    <div class="insight-table-wrap">
+    <div class="insight-table-wrap pain-desktop">
       <table class="insight-table pain-table">
         <thead>
           <tr><th>#</th><th>Player</th><th>Pain</th><th>Near exacts</th><th>Winner misses</th><th>Popular zeroes</th></tr>
@@ -965,26 +965,56 @@ function renderPainIndex(data) {
         </tbody>
       </table>
     </div>
+    <div class="pain-mobile-list">
+      ${topRows.map((row, index) => `
+        <article class="pain-mobile-card">
+          <div class="pain-mobile-summary" tabindex="0" role="button" aria-expanded="false">
+            <span class="pain-rank">${index + 1}</span>
+            <span class="pain-player">${playerButton(row.player)}</span>
+            <span class="pain-score">${row.score}</span>
+          </div>
+          <div class="pain-mobile-details">
+            <div class="pain-breakdown">
+              <span><b>${row.nearExacts}</b> near exacts x3</span>
+              <span><b>${row.winnerMisses}</b> winner misses x2</span>
+              <span><b>${row.popularZeroes}</b> popular zeroes x2</span>
+            </div>
+          </div>
+        </article>
+      `).join("")}
+    </div>
   `;
   bindPainIndexRows();
 }
 
-function togglePainRow(row) {
-  const open = row.classList.toggle("is-open");
-  row.setAttribute("aria-expanded", String(open));
-  row.nextElementSibling?.classList.toggle("is-open", open);
+function togglePainItem(item, details) {
+  const open = item.classList.toggle("is-open");
+  item.setAttribute("aria-expanded", String(open));
+  details?.classList.toggle("is-open", open);
 }
 
 function bindPainIndexRows() {
   document.querySelectorAll(".pain-summary").forEach((row) => {
     row.addEventListener("click", (event) => {
       if (event.target.closest("[data-profile-player]")) return;
-      togglePainRow(row);
+      togglePainItem(row, row.nextElementSibling);
     });
     row.addEventListener("keydown", (event) => {
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
-      togglePainRow(row);
+      togglePainItem(row, row.nextElementSibling);
+    });
+  });
+
+  document.querySelectorAll(".pain-mobile-summary").forEach((row) => {
+    row.addEventListener("click", (event) => {
+      if (event.target.closest("[data-profile-player]")) return;
+      togglePainItem(row, row.nextElementSibling);
+    });
+    row.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      togglePainItem(row, row.nextElementSibling);
     });
   });
 }

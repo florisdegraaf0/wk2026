@@ -822,6 +822,10 @@ body.oranje-mode .highlight-value {
   color: #c0362c;
 }
 
+.pain-mobile-list {
+  display: none;
+}
+
 body.oranje-mode .insight-pill {
   border-color: #ffd4a3;
   background: #fff8ef;
@@ -864,65 +868,70 @@ body.oranje-mode .pain-table td:nth-child(3) strong {
     grid-template-columns: minmax(96px, 1.2fr) repeat(var(--heatmap-columns), minmax(28px, 1fr));
   }
 
-  .pain-table {
-    min-width: 0;
-  }
-
-  .pain-table,
-  .pain-table tbody,
-  .pain-table tr,
-  .pain-table td {
-    display: block;
-    width: 100%;
-  }
-
-  .pain-table thead {
+  .pain-desktop {
     display: none;
   }
 
-  .pain-summary {
-    position: relative;
+  .pain-mobile-list {
+    display: grid;
+    gap: 8px;
+  }
+
+  .pain-mobile-card {
+    border-bottom: 1px solid #e6eee8;
+  }
+
+  .pain-mobile-summary {
     display: grid;
     grid-template-columns: 34px minmax(0, 1fr) auto;
     gap: 8px;
     align-items: center;
-    padding: 11px 0;
-    border-bottom: 1px solid #e6eee8;
+    min-height: 46px;
+    cursor: pointer;
   }
 
-  .pain-summary td {
-    padding: 0;
-    border-bottom: 0;
+  .pain-rank {
+    color: #637069;
+    font-weight: 700;
   }
 
-  .pain-summary td:nth-child(4),
-  .pain-summary td:nth-child(5),
-  .pain-summary td:nth-child(6) {
+  .pain-player {
+    min-width: 0;
+    font-weight: 700;
+  }
+
+  .pain-player .player-link {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-align: left;
+  }
+
+  .pain-score {
+    display: inline-flex;
+    justify-content: center;
+    min-width: 40px;
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: #fae8e6;
+    color: #c0362c;
+    font-weight: 700;
+  }
+
+  .pain-mobile-details {
     display: none;
-  }
-
-  .pain-summary td:nth-child(3) {
-    width: auto;
-  }
-
-  .pain-details {
-    display: none;
-  }
-
-  .pain-details.is-open {
-    display: block;
-  }
-
-  .pain-details td {
     padding: 0 0 12px 42px;
   }
 
-  .pain-breakdown {
+  .pain-mobile-details.is-open {
+    display: block;
+  }
+
+  .pain-mobile-details .pain-breakdown {
     display: grid;
     gap: 6px;
   }
 
-  .pain-breakdown span {
+  .pain-mobile-details .pain-breakdown span {
     justify-content: space-between;
     border: 1px solid #e6eee8;
     border-radius: 6px;
