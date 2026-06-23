@@ -13,12 +13,28 @@
         <p>Vul de <a href="https://docs.google.com/spreadsheets/d/1fozCeduyiHd2W66pqQHGKjAPH5zBtczB24yjBeGOyK8/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Google Sheet</a> in voor de scores en standen. De site haalt de nieuwste data op zodra iemand de pagina opent.</p>
       </header>
 
+      <nav class="site-nav" aria-label="Main sections">
+        <a href="#nextGameSection">Next game</a>
+        <a href="#highlightsSection">Highlights</a>
+        <a href="#leaderboardSection">Leaderboard</a>
+        <a href="#profileSection">Profiles</a>
+        <a href="#progressSection">Progress</a>
+        <a href="#geekSection">Geek charts</a>
+        <a href="#statsSection">Fun stats</a>
+        <a href="#scoresSection">Scores</a>
+      </nav>
+
       <section id="nextGameSection">
         <h2>Next Game</h2>
         <div id="nextGame"></div>
       </section>
 
-      <section>
+      <section id="highlightsSection">
+        <h2>Highlights</h2>
+        <div id="highlights"></div>
+      </section>
+
+      <section id="leaderboardSection">
         <h2>Leaderboard</h2>
         <table>
           <thead>
@@ -32,7 +48,7 @@
         </table>
       </section>
 
-      <section>
+      <section id="profileSection">
         <div class="section-head">
           <h2>Player Profile</h2>
           <select id="playerPicker" aria-label="Choose player"></select>
@@ -40,7 +56,7 @@
         <div id="playerProfile"></div>
       </section>
 
-      <section>
+      <section id="progressSection">
         <div class="section-head">
           <h2>Progress Charts</h2>
           <div class="chart-controls">
@@ -69,7 +85,7 @@
         <div id="chartLegend" class="chart-legend"></div>
       </section>
 
-      <section>
+      <section id="geekSection">
         <div class="section-head">
           <h2>Geek Charts</h2>
           <div class="chart-controls">
@@ -89,7 +105,7 @@
         <p id="geekChartNote" class="chart-note"></p>
       </section>
 
-      <section>
+      <section id="statsSection">
         <div class="section-head">
           <h2>Fun Stats</h2>
           <select id="statPicker" aria-label="Choose stat">
@@ -111,7 +127,7 @@
         <div id="statPanel"></div>
       </section>
 
-      <section>
+      <section id="scoresSection">
         <h2>Scores</h2>
         <table>
           <thead>

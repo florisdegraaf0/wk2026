@@ -442,6 +442,198 @@ function biggestMoverRows(data, gameCount = 1) {
     .sort((a, b) => Math.abs(b.movement) - Math.abs(a.movement) || b.movement - a.movement || a.player.localeCompare(b.player));
 }
 
+function playerStreak(matches, player, predicate) {
+  let best = 0;
+  let current = 0;
+
+  matches.forEach((match) => {
+    if (predicate(match.points[player] || 0)) {
+      current += 1;
+      best = Math.max(best, current);
+      return;
+    }
+    current = 0;
+  });
+
+  return best;
+}
+
+function nearlyExact(prediction, actual) {
+  if (!prediction || !actual) return false;
+  if (prediction[0] === actual[0] && prediction[1] === actual[1]) return false;
+  return Math.abs(prediction[0] - actual[0]) + Math.abs(prediction[1] - actual[1]) === 1;
+}
+
+function predictionCounts(match) {
+  const counts = new Map();
+  Object.values(match.predictions || {})
+    .filter(Boolean)
+    .forEach((prediction) => counts.set(prediction, (counts.get(prediction) || 0) + 1));
+  return counts;
+}
+
+function consensusPrediction(match) {
+  const counts = predictionCounts(match);
+  const top = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
+  return top?.[1] > 1 ? top[0] : "";
+}
+
+function bestHighlight(rows, sort) {
+  return rows.sort(sort)[0] || null;
+}
+
+function highlightCards(data) {
+  const played = playedMatchesByDate(data);
+  if (!played.length) return [];
+
+  const lowScoringGames = [...played]
+    .map((match) => ({
+      match,
+      average: data.players.reduce((total, player) => total + (match.points[player] || 0), 0) / data.players.length,
+    }))
+    .sort((a, b) => a.average - b.average || a.match.id - b.match.id)
+    .slice(0, Math.max(1, Math.ceil(played.length * 0.3)))
+    .map((row) => row.match);
+
+  const comebackRows = biggestMoverRows(data, 5).filter((row) => row.movement > 0);
+  const comeback = bestHighlight(comebackRows, (a, b) => b.movement - a.movement || b.points - a.points || a.player.localeCompare(b.player));
+
+  const rows = data.players.map((player) => {
+    const playedWithPoints = played.map((match) => match.points[player] || 0);
+    const totalPoints = playedWithPoints.reduce((total, points) => total + points, 0);
+    const exactMatches = playedWithPoints.filter((points) => points >= 10).length;
+    const exactPoints = playedWithPoints.reduce((total, points) => total + (points >= 10 ? points : 0), 0);
+    const nonExactPoints = totalPoints - exactPoints;
+    const lonelyPoints = played.reduce((total, match) => {
+      const prediction = match.predictions?.[player] || "";
+      if (!prediction || predictionCounts(match).get(prediction) !== 1) return total;
+      return total + (match.points[player] || 0);
+    }, 0);
+    const chaosPoints = lowScoringGames.reduce((total, match) => total + (match.points[player] || 0), 0);
+    const nearlyExactCount = played.reduce((total, match) => {
+      const prediction = parseScore(match.predictions?.[player]);
+      const actual = parseScore(match.score);
+      return total + (nearlyExact(prediction, actual) ? 1 : 0);
+    }, 0);
+    const predictions = data.matches.filter((match) => match.predictions?.[player]);
+    const consensusBreaks = predictions.filter((match) => {
+      const consensus = consensusPrediction(match);
+      return consensus && match.predictions[player] !== consensus;
+    }).length;
+
+    return {
+      player,
+      totalPoints,
+      nonExactPoints,
+      exactMatches,
+      exactRate: played.length ? exactMatches / played.length : 0,
+      hotStreak: playerStreak(played, player, (points) => points > 0),
+      coldStreak: playerStreak(played, player, (points) => points === 0),
+      consensusBreaks,
+      predictions: predictions.length,
+      lonelyPoints,
+      chaosPoints,
+      nearlyExactCount,
+      exactShare: totalPoints ? exactPoints / totalPoints : 0,
+    };
+  });
+
+  const luckiest = bestHighlight([...rows], (a, b) => b.nonExactPoints - a.nonExactPoints || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
+  const sharpest = bestHighlight([...rows], (a, b) => b.exactRate - a.exactRate || b.exactMatches - a.exactMatches || a.player.localeCompare(b.player));
+  const hot = bestHighlight([...rows], (a, b) => b.hotStreak - a.hotStreak || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
+  const cold = bestHighlight([...rows], (a, b) => b.coldStreak - a.coldStreak || a.totalPoints - b.totalPoints || a.player.localeCompare(b.player));
+  const breaker = bestHighlight([...rows], (a, b) => b.consensusBreaks - a.consensusBreaks || b.predictions - a.predictions || a.player.localeCompare(b.player));
+  const lonely = bestHighlight([...rows], (a, b) => b.lonelyPoints - a.lonelyPoints || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
+  const chaos = bestHighlight([...rows], (a, b) => b.chaosPoints - a.chaosPoints || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
+  const almost = bestHighlight([...rows], (a, b) => b.nearlyExactCount - a.nearlyExactCount || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
+  const allOrNothing = bestHighlight([...rows].filter((row) => row.totalPoints > 0), (a, b) => b.exactShare - a.exactShare || b.exactMatches - a.exactMatches || a.player.localeCompare(b.player));
+
+  return [
+    {
+      title: "Luckiest player",
+      player: luckiest.player,
+      value: `${luckiest.nonExactPoints} pts`,
+      detail: "Points from non-exact predictions",
+    },
+    {
+      title: "Sharpest shooter",
+      player: sharpest.player,
+      value: `${Math.round(sharpest.exactRate * 100)}%`,
+      detail: `${sharpest.exactMatches} exact scores from ${played.length} games`,
+    },
+    {
+      title: "Hot streak",
+      player: hot.player,
+      value: `${hot.hotStreak} games`,
+      detail: "Longest run with points",
+    },
+    {
+      title: "Cold streak",
+      player: cold.player,
+      value: `${cold.coldStreak} games`,
+      detail: "Longest run without points",
+    },
+    {
+      title: "Comeback king",
+      player: comeback?.player || "-",
+      value: comeback ? `+${comeback.movement}` : "-",
+      detail: "Rank gain over the latest 5 games",
+    },
+    {
+      title: "Consensus breaker",
+      player: breaker.player,
+      value: `${breaker.consensusBreaks} picks`,
+      detail: "Predictions away from the crowd",
+    },
+    {
+      title: "Lonely prophet",
+      player: lonely.player,
+      value: `${lonely.lonelyPoints} pts`,
+      detail: "Points from unique predictions",
+    },
+    {
+      title: "Chaos surfer",
+      player: chaos.player,
+      value: `${chaos.chaosPoints} pts`,
+      detail: "Points in the lowest-scoring 30% of games",
+    },
+    {
+      title: "Nearly nailed it",
+      player: almost.player,
+      value: `${almost.nearlyExactCount} games`,
+      detail: "Predictions one goal away from exact",
+    },
+    {
+      title: "All or nothing",
+      player: allOrNothing?.player || "-",
+      value: allOrNothing ? `${Math.round(allOrNothing.exactShare * 100)}%` : "-",
+      detail: "Share of points from exact scores",
+    },
+  ];
+}
+
+function renderHighlights(data) {
+  const cards = highlightCards(data);
+  const target = document.querySelector("#highlights");
+  if (!cards.length) {
+    target.innerHTML = `<p class="stat-note">Highlights will appear once games have been played.</p>`;
+    return;
+  }
+
+  target.innerHTML = `
+    <div class="highlight-grid">
+      ${cards.map((card) => `
+        <article class="highlight-card">
+          <div class="highlight-title">${card.title}</div>
+          <div class="highlight-player">${card.player === "-" ? "-" : playerButton(card.player)}</div>
+          <div class="highlight-value">${card.value}</div>
+          <div class="highlight-detail">${card.detail}</div>
+        </article>
+      `).join("")}
+    </div>
+  `;
+}
+
 function upcomingMatches(data) {
   const now = Date.now();
   return data.matches
@@ -783,45 +975,83 @@ function renderMatches(data) {
     <th>Points</th>
   `;
 
-  document.querySelector("#matches").innerHTML = data.matches
-    .map((match) => {
-      const values = data.players.map((player) => match.points[player]);
-      const total = values.reduce((sum, points) => sum + points, 0);
-      const best = Math.max(...values);
+  const roundGroups = data.matches.reduce((groups, match) => {
+    const round = match.round || "-";
+    if (!groups.has(round)) groups.set(round, []);
+    groups.get(round).push(match);
+    return groups;
+  }, new Map());
+  const defaultRound = defaultOpenRound(data);
+
+  document.querySelector("#matches").innerHTML = [...roundGroups.entries()]
+    .map(([round, matches]) => {
+      const isOpen = round === defaultRound;
+      const playedCount = matches.filter((match) => match.score).length;
       return `
-        <tr class="match-summary" data-match-id="${match.id}" tabindex="0" aria-expanded="false">
-          <td><span class="toggle-marker">+</span>${match.id}. ${match.label}</td>
-          <td>${matchDateTimeLabel(match)}</td>
-          <td>${match.group}</td>
-          <td>${match.round}</td>
-          <td>${match.score || "-"}</td>
-          <td>
-            <div class="points-list">
-              ${data.players.map((player) => `
-                <span class="score-chip ${pointClass(match.points[player], Boolean(match.score))}"><b>${player}</b> ${match.points[player]}</span>
-              `).join("")}
-            </div>
-            <div class="mobile-points-summary">${match.score ? `Total ${total} · Best ${best}` : "Not played yet"}</div>
-          </td>
-        </tr>
-        <tr class="match-details" data-match-details="${match.id}">
+        <tr class="round-summary ${isOpen ? "is-open" : ""}" data-round="${round}" tabindex="0" aria-expanded="${isOpen}">
           <td colspan="6">
-            <div class="prediction-grid">
-              ${data.players.map((player) => `
-                <div class="prediction-card">
-                  <b>${player}</b>
-                  <span>${match.predictions?.[player] || "-"}</span>
-                  <span>${match.points[player]} pts</span>
-                </div>
-              `).join("")}
-            </div>
+            <span class="toggle-marker">${isOpen ? "-" : "+"}</span>
+            <span class="round-title">Round ${round}</span>
+            <span class="round-meta">${playedCount}/${matches.length} played</span>
           </td>
         </tr>
+        ${matches.map((match) => {
+          const values = data.players.map((player) => match.points[player]);
+          const total = values.reduce((sum, points) => sum + points, 0);
+          const best = Math.max(...values);
+          return `
+            <tr class="match-summary round-match ${isOpen ? "is-round-open" : ""}" data-round-match="${round}" data-match-id="${match.id}" tabindex="0" aria-expanded="false">
+              <td><span class="toggle-marker">+</span>${match.id}. ${match.label}</td>
+              <td>${matchDateTimeLabel(match)}</td>
+              <td>${match.group}</td>
+              <td>${match.round}</td>
+              <td>${match.score || "-"}</td>
+              <td>
+                <div class="points-list">
+                  ${data.players.map((player) => `
+                    <span class="score-chip ${pointClass(match.points[player], Boolean(match.score))}"><b>${player}</b> ${match.points[player]}</span>
+                  `).join("")}
+                </div>
+                <div class="mobile-points-summary">${match.score ? `Total ${total} · Best ${best}` : "Not played yet"}</div>
+              </td>
+            </tr>
+            <tr class="match-details round-match ${isOpen ? "is-round-open" : ""}" data-round-match="${round}" data-match-details="${match.id}">
+              <td colspan="6">
+                <div class="prediction-grid">
+                  ${data.players.map((player) => `
+                    <div class="prediction-card">
+                      <b>${player}</b>
+                      <span>${match.predictions?.[player] || "-"}</span>
+                      <span>${match.points[player]} pts</span>
+                    </div>
+                  `).join("")}
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join("")}
       `;
     })
     .join("");
 
   bindMatchToggles();
+}
+
+function defaultOpenRound(data) {
+  const nextMatch = upcomingMatches(data)[0] || data.matches.find((match) => !match.score);
+  if (nextMatch) return nextMatch.round || "-";
+  return data.matches.at(-1)?.round || "-";
+}
+
+function toggleRound(row) {
+  const round = row.dataset.round;
+  const open = row.classList.toggle("is-open");
+  row.setAttribute("aria-expanded", String(open));
+  row.querySelector(".toggle-marker").textContent = open ? "-" : "+";
+  document.querySelectorAll("[data-round-match]").forEach((matchRow) => {
+    if (matchRow.dataset.roundMatch !== round) return;
+    matchRow.classList.toggle("is-round-open", open);
+  });
 }
 
 function toggleMatch(row) {
@@ -834,6 +1064,14 @@ function toggleMatch(row) {
 }
 
 function bindMatchToggles() {
+  document.querySelectorAll(".round-summary").forEach((row) => {
+    row.addEventListener("click", () => toggleRound(row));
+    row.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      toggleRound(row);
+    });
+  });
   document.querySelectorAll(".match-summary").forEach((row) => {
     row.addEventListener("click", () => toggleMatch(row));
     row.addEventListener("keydown", (event) => {
@@ -1300,72 +1538,85 @@ function drawGeekVolatility(context, data, player, comparePlayer, width, height)
     return "Points per played game for the selected player.";
   }
 
-  const padding = { top: 34, right: 34, bottom: 58, left: 52 };
-  const chartWidth = width - padding.left - padding.right;
-  const chartHeight = height - padding.top - padding.bottom;
-  const groupGap = 6;
-  const groupWidth = Math.max(14, (chartWidth - groupGap * (rows.length - 1)) / rows.length);
-  const barGap = comparePlayer ? 2 : 0;
-  const barWidth = Math.max(5, (groupWidth - barGap * (players.length - 1)) / players.length);
   const styles = {
     [player]: { stroke: "#0b7a45", fill: "#8fb99a" },
     ...(comparePlayer ? { [comparePlayer]: { stroke: "#286b9a", fill: "#8daec4" } } : {}),
   };
-  const averages = Object.fromEntries(players.map((name) => [
-    name,
-    rows.reduce((total, row) => total + row.points[name], 0) / rows.length,
-  ]));
 
   drawCanvasFrame(context, width, height);
-  for (let tick = 0; tick <= 5; tick += 1) {
-    const value = tick * 2;
-    const y = height - padding.bottom - (value / 10) * chartHeight;
-    context.strokeStyle = "#edf2ee";
-    context.beginPath();
-    context.moveTo(padding.left, y);
-    context.lineTo(width - padding.right, y);
-    context.stroke();
-    context.fillStyle = "#637069";
-    context.textAlign = "right";
-    context.textBaseline = "middle";
-    context.fillText(String(value), padding.left - 10, y);
-  }
 
-  rows.forEach((row, index) => {
-    const groupX = padding.left + index * (groupWidth + groupGap);
-    players.forEach((name, playerIndex) => {
-      const x = groupX + playerIndex * (barWidth + barGap);
+  const panelGap = comparePlayer ? 28 : 0;
+  const panelWidth = comparePlayer ? (width - panelGap) / 2 : width;
+  players.forEach((name, index) => {
+    const panelX = index * (panelWidth + panelGap);
+    const padding = { top: 42, right: 26, bottom: 58, left: index ? 38 : 52 };
+    const chartLeft = panelX + padding.left;
+    const chartRight = panelX + panelWidth - padding.right;
+    const chartBottom = height - padding.bottom;
+    const chartHeight = height - padding.top - padding.bottom;
+    const chartWidth = chartRight - chartLeft;
+    const barGap = chartWidth < 180 ? 1 : 5;
+    const barWidth = Math.max(2, (chartWidth - barGap * (rows.length - 1)) / rows.length);
+    const average = rows.reduce((total, row) => total + row.points[name], 0) / rows.length;
+
+    if (comparePlayer && index) {
+      context.strokeStyle = "#d7e1dc";
+      context.beginPath();
+      context.moveTo(panelX - panelGap / 2, 20);
+      context.lineTo(panelX - panelGap / 2, height - 24);
+      context.stroke();
+    }
+
+    context.fillStyle = styles[name].stroke;
+    context.font = "bold 13px Arial";
+    context.textAlign = "left";
+    context.textBaseline = "top";
+    context.fillText(name, chartLeft, 18);
+
+    for (let tick = 0; tick <= 5; tick += 1) {
+      const value = tick * 2;
+      const y = chartBottom - (value / 10) * chartHeight;
+      context.strokeStyle = "#edf2ee";
+      context.beginPath();
+      context.moveTo(chartLeft, y);
+      context.lineTo(chartRight, y);
+      context.stroke();
+      context.fillStyle = "#637069";
+      context.textAlign = "right";
+      context.textBaseline = "middle";
+      context.fillText(String(value), chartLeft - 10, y);
+    }
+
+    rows.forEach((row, rowIndex) => {
+      const x = chartLeft + rowIndex * (barWidth + barGap);
       const points = row.points[name];
       const barHeight = (points / 10) * chartHeight;
       context.fillStyle = styles[name].fill;
       context.globalAlpha = points === 10 ? 0.95 : 0.72;
-      context.fillRect(x, height - padding.bottom - barHeight, barWidth, barHeight);
+      context.fillRect(x, chartBottom - barHeight, barWidth, barHeight);
       context.globalAlpha = 1;
+      context.fillStyle = "#637069";
+      context.textAlign = "center";
+      context.textBaseline = "top";
+      context.fillText(String(row.match.id), x + barWidth / 2, chartBottom + 12);
     });
-    context.fillStyle = "#637069";
-    context.textAlign = "center";
-    context.textBaseline = "top";
-    context.fillText(String(row.match.id), groupX + groupWidth / 2, height - padding.bottom + 12);
-  });
 
-  players.forEach((name, index) => {
-    const averageY = height - padding.bottom - (averages[name] / 10) * chartHeight;
+    const averageY = chartBottom - (average / 10) * chartHeight;
     context.strokeStyle = styles[name].stroke;
-    context.setLineDash(index ? [3, 5] : [6, 5]);
+    context.setLineDash([6, 5]);
     context.beginPath();
-    context.moveTo(padding.left, averageY);
-    context.lineTo(width - padding.right, averageY);
+    context.moveTo(chartLeft, averageY);
+    context.lineTo(chartRight, averageY);
     context.stroke();
     context.setLineDash([]);
     context.fillStyle = styles[name].stroke;
     context.textAlign = "right";
     context.textBaseline = "bottom";
-    context.fillText(`avg ${averages[name].toFixed(1)}`, width - padding.right, averageY - 5 - index * 14);
+    context.fillText(`avg ${average.toFixed(1)}`, chartRight, averageY - 5);
   });
-  drawGeekLegend(context, players.map((name) => ({ label: name, ...styles[name] })), 28, 18);
 
   return comparePlayer
-    ? `Volatility compares ${player}'s and ${comparePlayer}'s points per played game, capped to the latest 20 games.`
+    ? `Volatility shows separate full timelines for ${player} and ${comparePlayer}, capped to the latest 20 games.`
     : `Volatility shows ${player}'s points per played game, capped to the latest 20 games.`;
 }
 
@@ -1694,13 +1945,20 @@ function countryRows(data) {
     const matchPoints = data.players.reduce((total, player) => total + match.points[player], 0);
     const countriesInMatch = [match.country1, match.country2];
     countriesInMatch.forEach((country) => {
-      countries.set(country, (countries.get(country) || 0) + matchPoints);
+      const row = countries.get(country) || { country, points: 0, games: 0 };
+      row.points += matchPoints;
+      row.games += 1;
+      countries.set(country, row);
     });
   });
 
-  const rows = [...countries.entries()]
-    .map(([country, points]) => ({ country, points }))
-    .sort((a, b) => b.points - a.points || a.country.localeCompare(b.country));
+  const rows = [...countries.values()]
+    .map((row) => ({
+      country: row.country,
+      score: Number((row.points / row.games).toFixed(2)),
+      games: row.games,
+    }))
+    .sort((a, b) => b.score - a.score || b.games - a.games || a.country.localeCompare(b.country));
 
   return rows;
 }
@@ -1833,10 +2091,10 @@ function renderSelectedStat(data) {
     html = groupedLeaderboards(data, "round", "Round");
   }
   if (selected === "bestCountries") {
-    html = simpleTable(["Country", "Points"], countries.slice(0, 10), ["country", "points"]);
+    html = simpleTable(["Country", "Pts/game", "Games"], countries.slice(0, 10), ["country", "score", "games"]);
   }
   if (selected === "worstCountries") {
-    html = simpleTable(["Country", "Points"], countries.slice(-10).reverse(), ["country", "points"]);
+    html = simpleTable(["Country", "Pts/game", "Games"], countries.slice(-10).reverse(), ["country", "score", "games"]);
   }
   if (selected === "surpriseCountries") {
     const surpriseRows = countrySurpriseRows(data);
@@ -1884,6 +2142,7 @@ fetch("/api/data")
     data = normalizeData(data);
     currentData = data;
     renderNextGame(data);
+    renderHighlights(data);
     renderLeaderboard(data);
     renderPlayerProfilePicker(data);
     renderMatches(data);
