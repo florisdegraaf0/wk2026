@@ -550,7 +550,7 @@ function highlightCards(data) {
 
   return [
     {
-      title: "Luckiest player",
+      title: "Best partial scorer",
       player: luckiest.player,
       value: `${luckiest.nonExactPoints} pts`,
       detail: "Points from non-exact predictions",
