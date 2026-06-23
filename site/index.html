@@ -18,30 +18,29 @@
           <span>Jump to</span>
           <select id="mobileSectionPicker" aria-label="Jump to section">
             <option value="#nextGameSection">Next game</option>
+            <option value="#leaderboardSection">Leaderboard</option>
+            <option value="#progressSection">Progress</option>
             <option value="#highlightsSection">Highlights</option>
             <option value="#personalitiesSection">Personalities</option>
             <option value="#affinitySection">Countries</option>
             <option value="#rivalriesSection">Rivalries</option>
-            <option value="#heatmapSection">Heatmap</option>
             <option value="#painSection">Pain index</option>
-            <option value="#leaderboardSection">Leaderboard</option>
             <option value="#profileSection">Profiles</option>
-            <option value="#progressSection">Progress</option>
             <option value="#geekSection">Geek charts</option>
             <option value="#statsSection">Fun stats</option>
             <option value="#scoresSection">Scores</option>
           </select>
         </label>
         <a href="#nextGameSection">Next game</a>
+        <a href="#leaderboardSection">Leaderboard</a>
+        <a href="#progressSection">Progress</a>
         <a href="#highlightsSection">Highlights</a>
         <a href="#personalitiesSection">Personalities</a>
         <a href="#affinitySection">Countries</a>
         <a href="#rivalriesSection">Rivalries</a>
         <a href="#heatmapSection">Heatmap</a>
         <a href="#painSection">Pain index</a>
-        <a href="#leaderboardSection">Leaderboard</a>
         <a href="#profileSection">Profiles</a>
-        <a href="#progressSection">Progress</a>
         <a href="#geekSection">Geek charts</a>
         <a href="#statsSection">Fun stats</a>
         <a href="#scoresSection">Scores</a>
@@ -50,6 +49,49 @@
       <section id="nextGameSection">
         <h2>Next Game</h2>
         <div id="nextGame"></div>
+      </section>
+
+      <section id="leaderboardSection">
+        <h2>Leaderboard</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Player</th>
+              <th>Points</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard"></tbody>
+        </table>
+      </section>
+
+      <section id="progressSection">
+        <div class="section-head">
+          <h2>Progress Charts</h2>
+          <div class="chart-controls">
+            <select id="chartPicker" aria-label="Choose chart">
+              <option value="full">Full tournament</option>
+              <option value="lastFive">Last 5 games</option>
+              <option value="momentum">Momentum</option>
+            </select>
+          </div>
+        </div>
+        <div class="chart-player-controls">
+          <div class="chart-control-row">
+            <div id="chartPresetControls" class="chart-filter-list" aria-label="Chart presets"></div>
+            <div class="chart-control-actions">
+              <button type="button" id="selectAllChartPlayers">Select all</button>
+              <button type="button" id="deselectAllChartPlayers">Deselect all</button>
+            </div>
+          </div>
+          <div id="chartPlayerControls" class="chart-filter-list" aria-label="Chart players"></div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="progressChart" width="1000" height="420"></canvas>
+          <div id="chartTooltip" class="chart-tooltip"></div>
+        </div>
+        <p id="chartNote" class="chart-note"></p>
+        <div id="chartLegend" class="chart-legend"></div>
       </section>
 
       <section id="highlightsSection">
@@ -82,55 +124,12 @@
         <div id="painIndex"></div>
       </section>
 
-      <section id="leaderboardSection">
-        <h2>Leaderboard</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Player</th>
-              <th>Points</th>
-            </tr>
-          </thead>
-          <tbody id="leaderboard"></tbody>
-        </table>
-      </section>
-
       <section id="profileSection">
         <div class="section-head">
           <h2>Player Profile</h2>
           <select id="playerPicker" aria-label="Choose player"></select>
         </div>
         <div id="playerProfile"></div>
-      </section>
-
-      <section id="progressSection">
-        <div class="section-head">
-          <h2>Progress Charts</h2>
-          <div class="chart-controls">
-            <select id="chartPicker" aria-label="Choose chart">
-              <option value="full">Full tournament</option>
-              <option value="lastFive">Last 5 games</option>
-              <option value="momentum">Momentum</option>
-            </select>
-          </div>
-        </div>
-        <div class="chart-player-controls">
-          <div class="chart-control-row">
-            <div id="chartPresetControls" class="chart-filter-list" aria-label="Chart presets"></div>
-            <div class="chart-control-actions">
-              <button type="button" id="selectAllChartPlayers">Select all</button>
-              <button type="button" id="deselectAllChartPlayers">Deselect all</button>
-            </div>
-          </div>
-          <div id="chartPlayerControls" class="chart-filter-list" aria-label="Chart players"></div>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="progressChart" width="1000" height="420"></canvas>
-          <div id="chartTooltip" class="chart-tooltip"></div>
-        </div>
-        <p id="chartNote" class="chart-note"></p>
-        <div id="chartLegend" class="chart-legend"></div>
       </section>
 
       <section id="geekSection">

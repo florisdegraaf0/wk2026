@@ -807,15 +807,12 @@ function rivalrySummary(data, playerA, playerB) {
     };
   });
 
-  const totalA = rows.reduce((total, row) => total + row.pointsA, 0);
-  const totalB = rows.reduce((total, row) => total + row.pointsB, 0);
   const winsA = rows.filter((row) => row.winner === playerA).length;
   const winsB = rows.filter((row) => row.winner === playerB).length;
   const draws = rows.filter((row) => row.winner === "Draw").length;
-  const biggestSwing = [...rows]
-    .sort((a, b) => Math.abs(b.pointsA - b.pointsB) - Math.abs(a.pointsA - a.pointsB) || a.match.id - b.match.id)[0];
+  const currentLeader = winsA === winsB ? "Tied" : winsA > winsB ? playerA : playerB;
 
-  return { rows, totalA, totalB, winsA, winsB, draws, biggestSwing };
+  return { rows, winsA, winsB, draws, currentLeader };
 }
 
 function renderHeadToHead(data) {
@@ -838,21 +835,20 @@ function renderHeadToHead(data) {
       </select>
     </div>
     <div class="rivalry-scoreboard">
-      <div><span>${playerA}</span><b>${summary.totalA}</b><small>${summary.winsA} game wins</small></div>
+      <div><span>${playerA}</span><b>${summary.winsA}</b><small>game wins</small></div>
       <div><span>Draws</span><b>${summary.draws}</b><small>same points</small></div>
-      <div><span>${playerB}</span><b>${summary.totalB}</b><small>${summary.winsB} game wins</small></div>
+      <div><span>${playerB}</span><b>${summary.winsB}</b><small>game wins</small></div>
     </div>
-    ${summary.biggestSwing ? `<p class="stat-note">Biggest swing: game ${summary.biggestSwing.match.id}, ${summary.biggestSwing.match.label} (${summary.biggestSwing.pointsA}-${summary.biggestSwing.pointsB}).</p>` : ""}
+    <p class="stat-note">Head-to-head counts who scored more points in each played game. Current leader: ${summary.currentLeader}.</p>
     <div class="insight-table-wrap">
       <table class="insight-table">
-        <thead><tr><th>Latest games</th><th>${playerA}</th><th>${playerB}</th><th>Winner</th></tr></thead>
+        <thead><tr><th>Latest games</th><th>Winner</th><th>Result</th></tr></thead>
         <tbody>
           ${latestRows.map((row) => `
             <tr>
               <td>${row.match.id}. ${row.match.label}</td>
-              <td>${row.pointsA}</td>
-              <td>${row.pointsB}</td>
               <td>${row.winner}</td>
+              <td>${row.winner === "Draw" ? "Draw" : "Win"}</td>
             </tr>
           `).join("")}
         </tbody>
@@ -948,7 +944,7 @@ function renderPainIndex(data) {
         </thead>
         <tbody>
           ${topRows.map((row, index) => `
-            <tr>
+            <tr class="pain-summary" tabindex="0" aria-expanded="false">
               <td>${index + 1}</td>
               <td>${playerButton(row.player)}</td>
               <td><strong>${row.score}</strong></td>
@@ -956,11 +952,41 @@ function renderPainIndex(data) {
               <td>${row.winnerMisses}</td>
               <td>${row.popularZeroes}</td>
             </tr>
+            <tr class="pain-details">
+              <td colspan="6">
+                <div class="pain-breakdown">
+                  <span><b>${row.nearExacts}</b> near exacts x3</span>
+                  <span><b>${row.winnerMisses}</b> winner misses x2</span>
+                  <span><b>${row.popularZeroes}</b> popular zeroes x2</span>
+                </div>
+              </td>
+            </tr>
           `).join("")}
         </tbody>
       </table>
     </div>
   `;
+  bindPainIndexRows();
+}
+
+function togglePainRow(row) {
+  const open = row.classList.toggle("is-open");
+  row.setAttribute("aria-expanded", String(open));
+  row.nextElementSibling?.classList.toggle("is-open", open);
+}
+
+function bindPainIndexRows() {
+  document.querySelectorAll(".pain-summary").forEach((row) => {
+    row.addEventListener("click", (event) => {
+      if (event.target.closest("[data-profile-player]")) return;
+      togglePainRow(row);
+    });
+    row.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      togglePainRow(row);
+    });
+  });
 }
 
 function upcomingMatches(data) {
