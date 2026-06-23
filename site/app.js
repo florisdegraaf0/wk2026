@@ -634,6 +634,335 @@ function renderHighlights(data) {
   `;
 }
 
+function playerPredictionStats(data, player) {
+  const played = playedMatchesByDate(data);
+  const predictions = data.matches.filter((match) => match.predictions?.[player]);
+  const points = played.map((match) => match.points[player] || 0);
+  const totalPoints = points.reduce((total, value) => total + value, 0);
+  const exactCount = points.filter((value) => value >= 10).length;
+  const zeroCount = points.filter((value) => value === 0).length;
+  const partialPoints = points.reduce((total, value) => total + (value > 0 && value < 10 ? value : 0), 0);
+  const consensusBreaks = predictions.filter((match) => {
+    const consensus = consensusPrediction(match);
+    return consensus && match.predictions[player] !== consensus;
+  }).length;
+  const average = points.length ? totalPoints / points.length : 0;
+  const variance = points.length
+    ? points.reduce((total, value) => total + ((value - average) ** 2), 0) / points.length
+    : 0;
+
+  return {
+    player,
+    played: played.length,
+    predictions: predictions.length,
+    totalPoints,
+    exactCount,
+    exactRate: played.length ? exactCount / played.length : 0,
+    zeroRate: played.length ? zeroCount / played.length : 0,
+    partialPoints,
+    consensusBreaks,
+    consensusBreakRate: predictions.length ? consensusBreaks / predictions.length : 0,
+    volatility: Math.sqrt(variance),
+  };
+}
+
+function predictionPersonality(row) {
+  const traits = [
+    {
+      label: "Sniper",
+      score: row.exactRate,
+      detail: `${Math.round(row.exactRate * 100)}% exact-score rate`,
+    },
+    {
+      label: "Contrarian",
+      score: row.consensusBreakRate,
+      detail: `${row.consensusBreaks} picks away from consensus`,
+    },
+    {
+      label: "Grinder",
+      score: row.totalPoints ? row.partialPoints / row.totalPoints : 0,
+      detail: `${row.partialPoints} points from partial hits`,
+    },
+    {
+      label: "Chaos surfer",
+      score: row.volatility / 5,
+      detail: `Volatility ${row.volatility.toFixed(1)} pts/game`,
+    },
+    {
+      label: "Safe hands",
+      score: 1 - row.zeroRate,
+      detail: `${Math.round((1 - row.zeroRate) * 100)}% games with points`,
+    },
+  ];
+
+  return traits.sort((a, b) => b.score - a.score || a.label.localeCompare(b.label))[0];
+}
+
+function renderPredictionPersonalities(data) {
+  const rows = data.players
+    .map((player) => {
+      const stats = playerPredictionStats(data, player);
+      const personality = predictionPersonality(stats);
+      return {
+        player,
+        personality: personality.label,
+        detail: personality.detail,
+        exact: stats.exactCount,
+        contrarian: stats.consensusBreaks,
+        points: stats.totalPoints,
+      };
+    })
+    .sort((a, b) => a.personality.localeCompare(b.personality) || b.points - a.points || a.player.localeCompare(b.player));
+
+  document.querySelector("#personalities").innerHTML = `
+    <div class="insight-table-wrap">
+      <table class="insight-table">
+        <thead>
+          <tr><th>Player</th><th>Personality</th><th>Why</th><th>Exact</th><th>Contrarian</th></tr>
+        </thead>
+        <tbody>
+          ${rows.map((row) => `
+            <tr>
+              <td>${playerButton(row.player)}</td>
+              <td><span class="insight-pill">${row.personality}</span></td>
+              <td>${row.detail}</td>
+              <td>${row.exact}</td>
+              <td>${row.contrarian}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function countryAffinityRows(data) {
+  const played = playedMatchesByDate(data);
+
+  return data.players.map((player) => {
+    const countries = new Map();
+    played.forEach((match) => {
+      [match.country1, match.country2].forEach((country) => {
+        const row = countries.get(country) || { country, points: 0, games: 0 };
+        row.points += match.points[player] || 0;
+        row.games += 1;
+        countries.set(country, row);
+      });
+    });
+
+    const rows = [...countries.values()]
+      .filter((row) => row.games >= 2)
+      .map((row) => ({
+        ...row,
+        average: row.points / row.games,
+      }));
+    const best = [...rows].sort((a, b) => b.average - a.average || b.games - a.games || a.country.localeCompare(b.country))[0];
+    const worst = [...rows].sort((a, b) => a.average - b.average || b.games - a.games || a.country.localeCompare(b.country))[0];
+
+    return {
+      player,
+      best: best ? `${best.country} (${best.average.toFixed(1)})` : "-",
+      worst: worst ? `${worst.country} (${worst.average.toFixed(1)})` : "-",
+      bestGames: best?.games || "-",
+      worstGames: worst?.games || "-",
+    };
+  });
+}
+
+function renderCountryAffinity(data) {
+  const rows = countryAffinityRows(data);
+  document.querySelector("#countryAffinity").innerHTML = `
+    <p class="stat-note">Best and cursed countries use player points per game in matches involving that country, minimum 2 played games.</p>
+    <div class="insight-table-wrap">
+      <table class="insight-table">
+        <thead>
+          <tr><th>Player</th><th>Best country</th><th>Games</th><th>Cursed country</th><th>Games</th></tr>
+        </thead>
+        <tbody>
+          ${rows.map((row) => `
+            <tr>
+              <td>${playerButton(row.player)}</td>
+              <td>${row.best}</td>
+              <td>${row.bestGames}</td>
+              <td>${row.worst}</td>
+              <td>${row.worstGames}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function rivalrySummary(data, playerA, playerB) {
+  const played = playedMatchesByDate(data);
+  const rows = played.map((match) => {
+    const pointsA = match.points[playerA] || 0;
+    const pointsB = match.points[playerB] || 0;
+    return {
+      match,
+      pointsA,
+      pointsB,
+      winner: pointsA === pointsB ? "Draw" : pointsA > pointsB ? playerA : playerB,
+    };
+  });
+
+  const totalA = rows.reduce((total, row) => total + row.pointsA, 0);
+  const totalB = rows.reduce((total, row) => total + row.pointsB, 0);
+  const winsA = rows.filter((row) => row.winner === playerA).length;
+  const winsB = rows.filter((row) => row.winner === playerB).length;
+  const draws = rows.filter((row) => row.winner === "Draw").length;
+  const biggestSwing = [...rows]
+    .sort((a, b) => Math.abs(b.pointsA - b.pointsB) - Math.abs(a.pointsA - a.pointsB) || a.match.id - b.match.id)[0];
+
+  return { rows, totalA, totalB, winsA, winsB, draws, biggestSwing };
+}
+
+function renderHeadToHead(data) {
+  const playerA = document.querySelector("#rivalA")?.value || data.players[0];
+  let playerB = document.querySelector("#rivalB")?.value || data.players.find((player) => player !== playerA) || data.players[0];
+  if (playerB === playerA) {
+    playerB = data.players.find((player) => player !== playerA) || playerA;
+  }
+  const summary = rivalrySummary(data, playerA, playerB);
+  const latestRows = summary.rows.slice(-8).reverse();
+
+  document.querySelector("#rivalries").innerHTML = `
+    <div class="rivalry-controls">
+      <select id="rivalA" aria-label="First rivalry player">
+        ${data.players.map((player) => `<option value="${player}" ${player === playerA ? "selected" : ""}>${player}</option>`).join("")}
+      </select>
+      <span>vs</span>
+      <select id="rivalB" aria-label="Second rivalry player">
+        ${data.players.map((player) => `<option value="${player}" ${player === playerB ? "selected" : ""}>${player}</option>`).join("")}
+      </select>
+    </div>
+    <div class="rivalry-scoreboard">
+      <div><span>${playerA}</span><b>${summary.totalA}</b><small>${summary.winsA} game wins</small></div>
+      <div><span>Draws</span><b>${summary.draws}</b><small>same points</small></div>
+      <div><span>${playerB}</span><b>${summary.totalB}</b><small>${summary.winsB} game wins</small></div>
+    </div>
+    ${summary.biggestSwing ? `<p class="stat-note">Biggest swing: game ${summary.biggestSwing.match.id}, ${summary.biggestSwing.match.label} (${summary.biggestSwing.pointsA}-${summary.biggestSwing.pointsB}).</p>` : ""}
+    <div class="insight-table-wrap">
+      <table class="insight-table">
+        <thead><tr><th>Latest games</th><th>${playerA}</th><th>${playerB}</th><th>Winner</th></tr></thead>
+        <tbody>
+          ${latestRows.map((row) => `
+            <tr>
+              <td>${row.match.id}. ${row.match.label}</td>
+              <td>${row.pointsA}</td>
+              <td>${row.pointsB}</td>
+              <td>${row.winner}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  document.querySelector("#rivalA").addEventListener("change", () => renderHeadToHead(currentData));
+  document.querySelector("#rivalB").addEventListener("change", () => renderHeadToHead(currentData));
+}
+
+function renderPredictionHeatmap(data) {
+  const played = playedMatchesByDate(data);
+  const maxColumns = 30;
+  const matches = played.slice(-maxColumns);
+  const target = document.querySelector("#predictionHeatmap");
+
+  if (!matches.length) {
+    target.innerHTML = `<p class="stat-note">The heatmap will appear once games have been played.</p>`;
+    return;
+  }
+
+  target.innerHTML = `
+    <div class="heatmap-wrap">
+      <div class="heatmap-grid" style="--heatmap-columns: ${matches.length};">
+        <div class="heatmap-corner">Player</div>
+        ${matches.map((match) => `<div class="heatmap-head" title="${match.label}">${match.id}</div>`).join("")}
+        ${data.players.map((player) => `
+          <div class="heatmap-player">${playerButton(player)}</div>
+          ${matches.map((match) => {
+            const points = match.points[player] || 0;
+            return `<div class="heatmap-cell ${pointClass(points, true)}" title="${player}: ${points} pts in ${match.label}">${points}</div>`;
+          }).join("")}
+        `).join("")}
+      </div>
+    </div>
+    <p class="stat-note">Showing the latest ${matches.length} played games.</p>
+  `;
+}
+
+function scoreWinner(score) {
+  if (!score) return "";
+  if (score[0] === score[1]) return "draw";
+  return score[0] > score[1] ? "home" : "away";
+}
+
+function painIndexRows(data) {
+  const played = playedMatchesByDate(data);
+
+  return data.players.map((player) => {
+    const row = {
+      player,
+      nearExacts: 0,
+      winnerMisses: 0,
+      popularZeroes: 0,
+      score: 0,
+    };
+
+    played.forEach((match) => {
+      const prediction = parseScore(match.predictions?.[player]);
+      const actual = parseScore(match.score);
+      const points = match.points[player] || 0;
+      if (!prediction || !actual) return;
+
+      if (nearlyExact(prediction, actual)) row.nearExacts += 1;
+
+      const predictedWinner = scoreWinner(prediction);
+      const actualWinner = scoreWinner(actual);
+      if (predictedWinner && predictedWinner === actualWinner && points < 10) {
+        row.winnerMisses += 1;
+      }
+
+      const consensus = consensusPrediction(match);
+      if (points === 0 && consensus && match.predictions[player] === consensus) {
+        row.popularZeroes += 1;
+      }
+    });
+
+    row.score = row.nearExacts * 3 + row.winnerMisses * 2 + row.popularZeroes * 2;
+    return row;
+  }).sort((a, b) => b.score - a.score || b.nearExacts - a.nearExacts || a.player.localeCompare(b.player));
+}
+
+function renderPainIndex(data) {
+  const rows = painIndexRows(data);
+  const topRows = rows.slice(0, 10);
+  document.querySelector("#painIndex").innerHTML = `
+    <p class="stat-note">Pain Index = near exacts x3 + correct winner but missed exact x2 + zero points on popular predictions x2.</p>
+    <div class="insight-table-wrap">
+      <table class="insight-table pain-table">
+        <thead>
+          <tr><th>#</th><th>Player</th><th>Pain</th><th>Near exacts</th><th>Winner misses</th><th>Popular zeroes</th></tr>
+        </thead>
+        <tbody>
+          ${topRows.map((row, index) => `
+            <tr>
+              <td>${index + 1}</td>
+              <td>${playerButton(row.player)}</td>
+              <td><strong>${row.score}</strong></td>
+              <td>${row.nearExacts}</td>
+              <td>${row.winnerMisses}</td>
+              <td>${row.popularZeroes}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 function upcomingMatches(data) {
   const now = Date.now();
   return data.matches
@@ -798,6 +1127,22 @@ function bindProfileLinks() {
     if (!button) return;
     selectPlayerProfile(button.dataset.profilePlayer);
     document.querySelector("#playerProfile")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+}
+
+function bindMobileNavigation() {
+  const picker = document.querySelector("#mobileSectionPicker");
+  if (!picker) return;
+
+  picker.addEventListener("change", () => {
+    const target = document.querySelector(picker.value);
+    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  document.querySelectorAll(".site-nav a").forEach((link) => {
+    link.addEventListener("click", () => {
+      picker.value = link.getAttribute("href");
+    });
   });
 }
 
@@ -2143,6 +2488,11 @@ fetch("/api/data")
     currentData = data;
     renderNextGame(data);
     renderHighlights(data);
+    renderPredictionPersonalities(data);
+    renderCountryAffinity(data);
+    renderHeadToHead(data);
+    renderPredictionHeatmap(data);
+    renderPainIndex(data);
     renderLeaderboard(data);
     renderPlayerProfilePicker(data);
     renderMatches(data);
@@ -2153,5 +2503,6 @@ fetch("/api/data")
     bindChartPicker();
     bindChartPlayerControls(data);
     bindProfileLinks();
+    bindMobileNavigation();
     document.querySelector("#statPicker").addEventListener("change", () => renderSelectedStat(currentData));
   });

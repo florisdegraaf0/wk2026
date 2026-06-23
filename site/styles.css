@@ -81,6 +81,10 @@ header {
   color: #0b7a45;
 }
 
+.site-nav-mobile {
+  display: none;
+}
+
 body.oranje-mode header {
   padding: 14px 16px;
   border: 1px solid #ffd4a3;
@@ -118,17 +122,30 @@ body.oranje-mode .site-nav a:focus-visible {
 @media (max-width: 760px) {
   .site-nav {
     top: 8px;
-    gap: 6px;
+    display: block;
     margin-top: -8px;
-    overflow-x: auto;
-    flex-wrap: nowrap;
+    padding: 10px;
   }
 
   .site-nav a {
-    flex: 0 0 auto;
-    min-height: 32px;
-    font-size: 13px;
-    white-space: nowrap;
+    display: none;
+  }
+
+  .site-nav-mobile {
+    display: grid;
+    gap: 5px;
+  }
+
+  .site-nav-mobile span {
+    color: #637069;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .site-nav-mobile select {
+    width: 100%;
+    min-width: 0;
   }
 }
 
@@ -584,6 +601,197 @@ body.oranje-mode .highlight-card {
 
 body.oranje-mode .highlight-value {
   color: #b34800;
+}
+
+.insight-table-wrap {
+  overflow-x: auto;
+}
+
+.insight-table {
+  min-width: 680px;
+}
+
+.insight-table th,
+.insight-table td {
+  vertical-align: middle;
+}
+
+.insight-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 8px;
+  border: 1px solid #d8e2d9;
+  border-radius: 999px;
+  background: #f4faf6;
+  color: #0b7a45;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.rivalry-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.rivalry-controls span {
+  color: #637069;
+  font-weight: 700;
+}
+
+.rivalry-scoreboard {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.rivalry-scoreboard div {
+  display: grid;
+  gap: 4px;
+  min-height: 94px;
+  padding: 12px;
+  border: 1px solid #e0ebe3;
+  border-radius: 8px;
+  background: #fbfdfb;
+}
+
+.rivalry-scoreboard span,
+.rivalry-scoreboard small {
+  color: #637069;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rivalry-scoreboard b {
+  color: #0b7a45;
+  font-size: 30px;
+  line-height: 1;
+}
+
+.heatmap-wrap {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.2fr) repeat(var(--heatmap-columns), minmax(32px, 1fr));
+  gap: 3px;
+  min-width: max-content;
+}
+
+.heatmap-corner,
+.heatmap-head,
+.heatmap-player,
+.heatmap-cell {
+  min-height: 32px;
+  padding: 6px;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+.heatmap-corner,
+.heatmap-head,
+.heatmap-player {
+  display: flex;
+  align-items: center;
+  background: #f4f7f5;
+  color: #637069;
+  font-weight: 700;
+}
+
+.heatmap-head,
+.heatmap-cell {
+  justify-content: center;
+  text-align: center;
+}
+
+.heatmap-cell {
+  display: grid;
+  place-items: center;
+  color: #17201b;
+  font-weight: 700;
+}
+
+.heatmap-cell.score-10 {
+  background: #0b7a45;
+  color: #fff;
+}
+
+.heatmap-cell.score-7 {
+  background: #5d9f6b;
+  color: #fff;
+}
+
+.heatmap-cell.score-5 {
+  background: #b8d8aa;
+}
+
+.heatmap-cell.score-2 {
+  background: #e4efd2;
+}
+
+.heatmap-cell.score-0 {
+  background: #f5dfdc;
+  color: #9b2d25;
+}
+
+.pain-table td:nth-child(3),
+.pain-table th:nth-child(3) {
+  text-align: right;
+}
+
+.pain-table td:nth-child(3) strong {
+  display: inline-flex;
+  justify-content: center;
+  min-width: 40px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #fae8e6;
+  color: #c0362c;
+}
+
+body.oranje-mode .insight-pill {
+  border-color: #ffd4a3;
+  background: #fff8ef;
+  color: #b34800;
+}
+
+body.oranje-mode .rivalry-scoreboard div {
+  border-color: #ffd4a3;
+  background: #fffaf4;
+}
+
+body.oranje-mode .rivalry-scoreboard b {
+  color: #b34800;
+}
+
+body.oranje-mode .pain-table td:nth-child(3) strong {
+  background: #fff1dd;
+  color: #b34800;
+}
+
+@media (max-width: 760px) {
+  .rivalry-controls,
+  .rivalry-scoreboard {
+    grid-template-columns: 1fr;
+  }
+
+  .rivalry-controls {
+    display: grid;
+  }
+
+  .rivalry-controls select {
+    width: 100%;
+  }
+
+  .heatmap-grid {
+    grid-template-columns: minmax(96px, 1.2fr) repeat(var(--heatmap-columns), minmax(28px, 1fr));
+  }
 }
 
 .performer-medal {
