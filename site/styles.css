@@ -880,52 +880,70 @@ body.oranje-mode .pain-table td:nth-child(3) strong {
     display: none;
   }
 
-  .pain-summary {
+  .pain-table tr.pain-summary {
     position: relative;
     display: grid;
     grid-template-columns: 34px minmax(0, 1fr) auto;
     gap: 8px;
     align-items: center;
-    padding: 11px 0;
-    border-bottom: 1px solid #e6eee8;
+    margin-bottom: 8px;
+    padding: 10px;
+    border: 1px solid #e6eee8;
+    border-radius: 8px;
+    background: #fff;
   }
 
-  .pain-summary td {
+  .pain-table tr.pain-summary td {
     padding: 0;
     border-bottom: 0;
   }
 
-  .pain-summary td:nth-child(4),
-  .pain-summary td:nth-child(5),
-  .pain-summary td:nth-child(6) {
+  .pain-table tr.pain-summary td:nth-child(4),
+  .pain-table tr.pain-summary td:nth-child(5),
+  .pain-table tr.pain-summary td:nth-child(6) {
     display: none;
   }
 
-  .pain-summary td:nth-child(3) {
+  .pain-table tr.pain-summary td:nth-child(1) {
+    color: #637069;
+    font-weight: 700;
+  }
+
+  .pain-table tr.pain-summary td:nth-child(2) {
+    min-width: 0;
+    font-weight: 700;
+  }
+
+  .pain-table tr.pain-summary td:nth-child(3) {
     width: auto;
+    text-align: right;
   }
 
-  .pain-details {
+  .pain-table tr.pain-details {
     display: none;
+    margin: -4px 0 8px;
   }
 
-  .pain-details.is-open {
+  .pain-table tr.pain-details.is-open {
     display: block;
   }
 
-  .pain-details td {
-    padding: 0 0 12px 42px;
+  .pain-table tr.pain-details td {
+    padding: 0 0 4px 42px;
+    border-bottom: 0;
+    background: transparent;
   }
 
-  .pain-breakdown {
+  .pain-table .pain-breakdown {
     display: grid;
     gap: 6px;
   }
 
-  .pain-breakdown span {
+  .pain-table .pain-breakdown span {
     justify-content: space-between;
     border: 1px solid #e6eee8;
     border-radius: 6px;
+    background: #fbfdfb;
   }
 }
 
