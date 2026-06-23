@@ -80,6 +80,14 @@ function selectedChartPlayerList(data) {
   return data.players.filter((player) => selectedChartPlayers.has(player));
 }
 
+function safeRender(label, render) {
+  try {
+    render();
+  } catch (error) {
+    console.error(`${label} failed`, error);
+  }
+}
+
 function chartConfig(data, type, players = data.players) {
   const playedCount = data.matches.filter((match) => match.score).length;
   const hasWinnerPoint = Boolean(data.winner?.actual);
@@ -2513,12 +2521,6 @@ fetch("/api/data")
     data = normalizeData(data);
     currentData = data;
     renderNextGame(data);
-    renderHighlights(data);
-    renderPredictionPersonalities(data);
-    renderCountryAffinity(data);
-    renderHeadToHead(data);
-    renderPredictionHeatmap(data);
-    renderPainIndex(data);
     renderLeaderboard(data);
     renderPlayerProfilePicker(data);
     renderMatches(data);
@@ -2526,6 +2528,12 @@ fetch("/api/data")
     drawChart(data, selectedChartType);
     renderGeekChartControls(data);
     renderSelectedStat(data);
+    safeRender("Highlights", () => renderHighlights(data));
+    safeRender("Prediction personalities", () => renderPredictionPersonalities(data));
+    safeRender("Country affinity", () => renderCountryAffinity(data));
+    safeRender("Head-to-head rivalries", () => renderHeadToHead(data));
+    safeRender("Prediction heatmap", () => renderPredictionHeatmap(data));
+    safeRender("Pain Index", () => renderPainIndex(data));
     bindChartPicker();
     bindChartPlayerControls(data);
     bindProfileLinks();
