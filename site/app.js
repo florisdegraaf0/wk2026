@@ -2,6 +2,7 @@ const colors = ["#0b7a45", "#c0362c", "#286b9a", "#c58a24", "#6f42c1", "#222222"
 const matchTimeZoneOffset = "+02:00";
 const excludedPlayerNames = new Set(["API Match ID", "Status"]);
 const nextGameHoldMilliseconds = 2 * 60 * 60 * 1000;
+const oranjeModeLeadMilliseconds = 24 * 60 * 60 * 1000;
 let currentData;
 let chartState;
 let selectedChartType = "full";
@@ -95,15 +96,19 @@ function chartConfig(data, type, players = data.players) {
   if (type === "lastFive") {
     const series = Object.fromEntries(players.map((player) => {
       const values = playedProgressValuesForPlayer(data, player);
-      return [player, values.slice(-5)];
+      const start = Math.max(0, values.length - 5);
+      let windowTotal = 0;
+      const windowValues = values.slice(start).map((value, index) => {
+        const previous = values[start + index - 1] || 0;
+        windowTotal += value - previous;
+        return windowTotal;
+      });
+      return [player, [0, ...windowValues]];
     }));
-    const firstGame = Math.max(1, playedCount - Math.max(0, Math.max(...Object.values(series).map((values) => values.length)) - 1));
+    const pointCount = Math.max(1, Math.max(...Object.values(series).map((values) => values.length)));
+    const firstGame = Math.max(1, playedCount - Math.max(0, pointCount - 2));
     const values = Object.values(series).flat();
-    const minValue = values.length ? Math.min(...values) : 0;
     const maxValue = Math.max(10, ...values);
-    const yMin = minValue > 10 && maxValue - minValue <= maxValue * 0.55
-      ? Math.max(0, Math.floor((minValue - 5) / 5) * 5)
-      : 0;
 
     return {
       type,
@@ -111,12 +116,12 @@ function chartConfig(data, type, players = data.players) {
       playedCount,
       hasWinnerPoint: false,
       maxScore: niceChartMax(maxValue),
-      minScore: yMin,
-      brokenAxis: yMin > 0,
+      minScore: 0,
+      brokenAxis: false,
       xAxisTitle: "Last 5 games",
-      yAxisTitle: "Total points",
-      note: yMin > 0 ? `Y-axis starts at ${yMin} to make recent movement easier to compare.` : "",
-      xLabel: (index) => `Game ${firstGame + index}`,
+      yAxisTitle: "Points gained",
+      note: "Each line starts at 0 and accumulates points earned in the latest 5 played games.",
+      xLabel: (index) => index === 0 ? "Start" : `Game ${firstGame + index - 1}`,
       legendValue: (values) => values[values.length - 1] || 0,
       tooltipValue: (values) => values[values.length - 1] || 0,
     };
@@ -868,35 +873,6 @@ function renderHeadToHead(data) {
   document.querySelector("#rivalB").addEventListener("change", () => renderHeadToHead(currentData));
 }
 
-function renderPredictionHeatmap(data) {
-  const played = playedMatchesByDate(data);
-  const maxColumns = 30;
-  const matches = played.slice(-maxColumns);
-  const target = document.querySelector("#predictionHeatmap");
-
-  if (!matches.length) {
-    target.innerHTML = `<p class="stat-note">The heatmap will appear once games have been played.</p>`;
-    return;
-  }
-
-  target.innerHTML = `
-    <div class="heatmap-wrap">
-      <div class="heatmap-grid" style="--heatmap-columns: ${matches.length};">
-        <div class="heatmap-corner">Player</div>
-        ${matches.map((match) => `<div class="heatmap-head" title="${match.label}">${match.id}</div>`).join("")}
-        ${data.players.map((player) => `
-          <div class="heatmap-player">${playerButton(player)}</div>
-          ${matches.map((match) => {
-            const points = match.points[player] || 0;
-            return `<div class="heatmap-cell ${pointClass(points, true)}" title="${player}: ${points} pts in ${match.label}">${points}</div>`;
-          }).join("")}
-        `).join("")}
-      </div>
-    </div>
-    <p class="stat-note">Showing the latest ${matches.length} played games.</p>
-  `;
-}
-
 function scoreWinner(score) {
   if (!score) return "";
   if (score[0] === score[1]) return "draw";
@@ -1180,6 +1156,23 @@ function bindMobileNavigation() {
   });
 }
 
+function bindInsightTabs() {
+  const tabs = [...document.querySelectorAll("[data-insight-tab]")];
+  if (!tabs.length) return;
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((item) => {
+        const selected = item === tab;
+        const panel = document.querySelector(`#${item.dataset.insightTab}`);
+        item.classList.toggle("is-active", selected);
+        item.setAttribute("aria-selected", String(selected));
+        if (panel) panel.hidden = !selected;
+      });
+    });
+  });
+}
+
 function matchDateTimeLabel(match) {
   if (!match.date && !match.time) return "-";
   const date = match.date || "";
@@ -1206,6 +1199,17 @@ function isNederlandMatch(match) {
   return [match.country1, match.country2].some((country) => String(country || "").trim().toLowerCase() === "nederland");
 }
 
+function isOranjeModeActive(data, now = Date.now()) {
+  const nextNederlandMatch = data.matches
+    .filter((match) => isNederlandMatch(match) && nextGameDisplayUntil(match) > now)
+    .sort((a, b) => matchTimestamp(a) - matchTimestamp(b) || a.id - b.id)[0];
+
+  if (!nextNederlandMatch) return false;
+
+  const kickoff = matchTimestamp(nextNederlandMatch);
+  return now >= kickoff - oranjeModeLeadMilliseconds && now <= nextGameDisplayUntil(nextNederlandMatch);
+}
+
 function formatCountdown(milliseconds) {
   const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
   const days = Math.floor(totalSeconds / 86400);
@@ -1222,95 +1226,112 @@ function formatCountdown(milliseconds) {
 }
 
 function updateNextGameCountdown() {
-  const countdown = document.querySelector("[data-countdown-target]");
-  const liveScore = document.querySelector("[data-next-game-display-until]");
-  if (!countdown && !liveScore) return;
+  const countdowns = [...document.querySelectorAll("[data-countdown-target]")];
+  const liveScores = [...document.querySelectorAll("[data-next-game-display-until]")];
+  if (!countdowns.length && !liveScores.length) return;
 
-  const displayUntilElement = countdown || liveScore;
-  const displayUntil = Number(displayUntilElement.dataset.countdownDisplayUntil || displayUntilElement.dataset.nextGameDisplayUntil);
-  if (displayUntil && Date.now() > displayUntil && currentData) {
+  const now = Date.now();
+  const displayElements = [...countdowns, ...liveScores];
+  const expired = displayElements.some((element) => {
+    const displayUntil = Number(element.dataset.countdownDisplayUntil || element.dataset.nextGameDisplayUntil);
+    return displayUntil && now > displayUntil;
+  });
+  if (expired && currentData) {
     renderNextGame(currentData);
     return;
   }
 
-  if (!countdown) return;
+  for (const countdown of countdowns) {
+    const target = Number(countdown.dataset.countdownTarget);
+    const remaining = target - now;
 
-  const target = Number(countdown.dataset.countdownTarget);
-  const remaining = target - Date.now();
+    if (remaining <= 0) {
+      if (currentData && !countdown.closest(".next-game-card")?.querySelector(".next-game-kicker")?.classList.contains("is-in-progress")) {
+        renderNextGame(currentData);
+        return;
+      }
 
-  if (remaining <= 0) {
-    if (currentData && !countdown.closest(".next-game-card")?.querySelector(".next-game-kicker")?.classList.contains("is-in-progress")) {
-      renderNextGame(currentData);
+      countdown.innerHTML = `
+        <span class="countdown-unit"><b>00</b><span>days</span></span>
+        <span class="countdown-unit"><b>00</b><span>hours</span></span>
+        <span class="countdown-unit"><b>00</b><span>min</span></span>
+        <span class="countdown-unit"><b>00</b><span>sec</span></span>
+      `;
+      countdown.closest(".next-game-card")?.classList.add("is-starting");
       return;
     }
 
+    const time = formatCountdown(remaining);
     countdown.innerHTML = `
-      <span class="countdown-unit"><b>00</b><span>days</span></span>
-      <span class="countdown-unit"><b>00</b><span>hours</span></span>
-      <span class="countdown-unit"><b>00</b><span>min</span></span>
-      <span class="countdown-unit"><b>00</b><span>sec</span></span>
+      <span class="countdown-unit"><b>${String(time.days).padStart(2, "0")}</b><span>days</span></span>
+      <span class="countdown-unit"><b>${time.hours}</b><span>hours</span></span>
+      <span class="countdown-unit"><b>${time.minutes}</b><span>min</span></span>
+      <span class="countdown-unit"><b>${time.seconds}</b><span>sec</span></span>
     `;
-    countdown.closest(".next-game-card")?.classList.add("is-starting");
-    return;
   }
-
-  const time = formatCountdown(remaining);
-  countdown.innerHTML = `
-    <span class="countdown-unit"><b>${String(time.days).padStart(2, "0")}</b><span>days</span></span>
-    <span class="countdown-unit"><b>${time.hours}</b><span>hours</span></span>
-    <span class="countdown-unit"><b>${time.minutes}</b><span>min</span></span>
-    <span class="countdown-unit"><b>${time.seconds}</b><span>sec</span></span>
-  `;
 }
 
-function renderNextGame(data) {
-  const now = Date.now();
-  const next = data.matches
-    .filter((match) => nextGameDisplayUntil(match) > now)
-    .sort((a, b) => matchTimestamp(a) - matchTimestamp(b) || a.id - b.id)[0];
-
-  const section = document.querySelector("#nextGameSection");
-  document.body.classList.toggle("oranje-mode", Boolean(next && isNederlandMatch(next)));
-  if (!next) {
-    section.style.display = "none";
-    return;
-  }
-
-  section.style.display = "";
-  const kickoff = matchTimestamp(next);
-  const displayUntil = nextGameDisplayUntil(next);
-  const inProgress = isInProgressMatch(next, now);
+function nextGameCardHtml(data, match, now) {
+  const kickoff = matchTimestamp(match);
+  const displayUntil = nextGameDisplayUntil(match);
+  const inProgress = isInProgressMatch(match, now);
   const kicker = inProgress ? "In progress" : "Coming up";
   const kickerClass = inProgress ? " is-in-progress" : "";
   const countdownOrScore = inProgress
     ? `
       <div class="next-game-live-score" data-next-game-display-until="${displayUntil}" aria-live="polite">
         <span>Current score</span>
-        <b>${next.score || "-"}</b>
+        <b>${match.score || "-"}</b>
       </div>
     `
     : `<div class="next-game-countdown" data-countdown-target="${kickoff}" data-countdown-display-until="${displayUntil}" aria-live="polite"></div>`;
+
+  return `
+    <div class="next-game-card">
+      <div class="next-game-main">
+        <div class="next-game-kicker${kickerClass}">${kicker}</div>
+        <h3>${match.label}</h3>
+        <div class="next-game-meta">${matchDateTimeLabel(match)} · Group ${match.group} · Round ${match.round}</div>
+      </div>
+      ${countdownOrScore}
+      <div class="next-game-predictions">
+        <div class="mini-heading">Predictions</div>
+        <div class="prediction-grid">
+          ${data.players.map((player) => `
+            <div class="prediction-card prediction-card-next">
+              <b>${player}</b>
+              <span>${match.predictions?.[player] || "-"}</span>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderNextGame(data) {
+  const now = Date.now();
+  const visibleMatches = data.matches
+    .filter((match) => nextGameDisplayUntil(match) > now)
+    .sort((a, b) => matchTimestamp(a) - matchTimestamp(b) || a.id - b.id);
+  const next = visibleMatches[0];
+
+  const section = document.querySelector("#nextGameSection");
+  if (!next) {
+    document.body.classList.toggle("oranje-mode", isOranjeModeActive(data, now));
+    section.style.display = "none";
+    return;
+  }
+
+  const nextKickoff = matchTimestamp(next);
+  const nextMatches = visibleMatches.filter((match) => matchTimestamp(match) === nextKickoff);
+  document.body.classList.toggle("oranje-mode", isOranjeModeActive(data, now));
+  section.style.display = "";
   const recentRows = recentResultRows(data);
   document.querySelector("#nextGame").innerHTML = `
     <div class="next-game-layout">
-      <div class="next-game-card">
-        <div class="next-game-main">
-          <div class="next-game-kicker${kickerClass}">${kicker}</div>
-          <h3>${next.label}</h3>
-          <div class="next-game-meta">${matchDateTimeLabel(next)} · Group ${next.group} · Round ${next.round}</div>
-        </div>
-        ${countdownOrScore}
-        <div class="next-game-predictions">
-          <div class="mini-heading">Predictions</div>
-          <div class="prediction-grid">
-            ${data.players.map((player) => `
-              <div class="prediction-card prediction-card-next">
-                <b>${player}</b>
-                <span>${next.predictions?.[player] || "-"}</span>
-              </div>
-            `).join("")}
-          </div>
-        </div>
+      <div class="next-game-card-grid">
+        ${nextMatches.map((match) => nextGameCardHtml(data, match, now)).join("")}
       </div>
       ${recentRows.length ? `
         <div class="recent-results-card">
@@ -2532,11 +2553,11 @@ fetch("/api/data")
     safeRender("Prediction personalities", () => renderPredictionPersonalities(data));
     safeRender("Country affinity", () => renderCountryAffinity(data));
     safeRender("Head-to-head rivalries", () => renderHeadToHead(data));
-    safeRender("Prediction heatmap", () => renderPredictionHeatmap(data));
     safeRender("Pain Index", () => renderPainIndex(data));
     bindChartPicker();
     bindChartPlayerControls(data);
     bindProfileLinks();
     bindMobileNavigation();
+    bindInsightTabs();
     document.querySelector("#statPicker").addEventListener("change", () => renderSelectedStat(currentData));
   });

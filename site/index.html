@@ -10,7 +10,7 @@
     <main>
       <header>
         <h1>WK poule 2026</h1>
-        <p>Vul de <a href="https://docs.google.com/spreadsheets/d/1fozCeduyiHd2W66pqQHGKjAPH5zBtczB24yjBeGOyK8/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Google Sheet</a> in voor de scores en standen. De site haalt de nieuwste data op zodra iemand de pagina opent.</p>
+        <p>Gebruik deze <a href="https://docs.google.com/spreadsheets/d/1fozCeduyiHd2W66pqQHGKjAPH5zBtczB24yjBeGOyK8/edit?usp=sharing" target="_blank" rel="noopener noreferrer">Google Sheet</a> om je voorspelling in te vullen. De site haalt de nieuwste data op zodra iemand de pagina opent.</p>
       </header>
 
       <nav class="site-nav" aria-label="Main sections">
@@ -21,13 +21,10 @@
             <option value="#leaderboardSection">Leaderboard</option>
             <option value="#progressSection">Progress</option>
             <option value="#highlightsSection">Highlights</option>
-            <option value="#personalitiesSection">Personalities</option>
-            <option value="#affinitySection">Countries</option>
-            <option value="#rivalriesSection">Rivalries</option>
-            <option value="#painSection">Pain index</option>
             <option value="#profileSection">Profiles</option>
             <option value="#geekSection">Geek charts</option>
             <option value="#statsSection">Fun stats</option>
+            <option value="#insightsSection">Insights</option>
             <option value="#scoresSection">Scores</option>
           </select>
         </label>
@@ -35,14 +32,10 @@
         <a href="#leaderboardSection">Leaderboard</a>
         <a href="#progressSection">Progress</a>
         <a href="#highlightsSection">Highlights</a>
-        <a href="#personalitiesSection">Personalities</a>
-        <a href="#affinitySection">Countries</a>
-        <a href="#rivalriesSection">Rivalries</a>
-        <a href="#heatmapSection">Heatmap</a>
-        <a href="#painSection">Pain index</a>
         <a href="#profileSection">Profiles</a>
         <a href="#geekSection">Geek charts</a>
         <a href="#statsSection">Fun stats</a>
+        <a href="#insightsSection">Insights</a>
         <a href="#scoresSection">Scores</a>
       </nav>
 
@@ -99,31 +92,6 @@
         <div id="highlights"></div>
       </section>
 
-      <section id="personalitiesSection">
-        <h2>Prediction Personalities</h2>
-        <div id="personalities"></div>
-      </section>
-
-      <section id="affinitySection">
-        <h2>Country Affinity</h2>
-        <div id="countryAffinity"></div>
-      </section>
-
-      <section id="rivalriesSection">
-        <h2>Head-to-Head Rivalries</h2>
-        <div id="rivalries"></div>
-      </section>
-
-      <section id="heatmapSection">
-        <h2>Prediction Heatmap</h2>
-        <div id="predictionHeatmap"></div>
-      </section>
-
-      <section id="painSection">
-        <h2>The Pain Index</h2>
-        <div id="painIndex"></div>
-      </section>
-
       <section id="profileSection">
         <div class="section-head">
           <h2>Player Profile</h2>
@@ -172,6 +140,28 @@
           </select>
         </div>
         <div id="statPanel"></div>
+      </section>
+
+      <section id="insightsSection">
+        <h2>Insights</h2>
+        <div class="insight-tabs" role="tablist" aria-label="Insight sections">
+          <button type="button" id="insightTabPersonalities" class="insight-tab is-active" role="tab" aria-selected="true" aria-controls="personalitiesPanel" data-insight-tab="personalitiesPanel">Prediction Personalities</button>
+          <button type="button" id="insightTabAffinity" class="insight-tab" role="tab" aria-selected="false" aria-controls="affinityPanel" data-insight-tab="affinityPanel">Country Affinity</button>
+          <button type="button" id="insightTabRivalries" class="insight-tab" role="tab" aria-selected="false" aria-controls="rivalriesPanel" data-insight-tab="rivalriesPanel">Head-to-Head Rivalries</button>
+          <button type="button" id="insightTabPain" class="insight-tab" role="tab" aria-selected="false" aria-controls="painPanel" data-insight-tab="painPanel">Pain Index</button>
+        </div>
+        <div id="personalitiesPanel" class="insight-panel" role="tabpanel" aria-labelledby="insightTabPersonalities">
+          <div id="personalities"></div>
+        </div>
+        <div id="affinityPanel" class="insight-panel" role="tabpanel" aria-labelledby="insightTabAffinity" hidden>
+          <div id="countryAffinity"></div>
+        </div>
+        <div id="rivalriesPanel" class="insight-panel" role="tabpanel" aria-labelledby="insightTabRivalries" hidden>
+          <div id="rivalries"></div>
+        </div>
+        <div id="painPanel" class="insight-panel" role="tabpanel" aria-labelledby="insightTabPain" hidden>
+          <div id="painIndex"></div>
+        </div>
       </section>
 
       <section id="scoresSection">
