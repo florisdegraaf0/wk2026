@@ -100,8 +100,52 @@ header {
   color: #0b7a45;
 }
 
+.site-nav a[aria-current="page"] {
+  background: #0b7a45;
+  color: #fff;
+}
+
 .site-nav-mobile {
   display: none;
+}
+
+.final-nav {
+  position: static;
+}
+
+.final-results-cta {
+  display: grid;
+  gap: 3px;
+  margin: 0 0 22px;
+  padding: 14px 18px;
+  border: 1px solid #075332;
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 48%),
+    #0b7a45;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 12px 28px rgba(11, 122, 69, 0.22);
+}
+
+.final-results-cta:hover,
+.final-results-cta:focus-visible {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.24), transparent 48%),
+    #08663a;
+  color: #fff;
+}
+
+.final-results-cta span {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.final-results-cta strong {
+  font-size: 18px;
+  line-height: 1.25;
 }
 
 body.oranje-mode header {
@@ -140,6 +184,26 @@ body.oranje-mode .site-nav a:hover,
 body.oranje-mode .site-nav a:focus-visible {
   background: #ffdfb3;
   color: #b34800;
+}
+
+body.oranje-mode .site-nav a[aria-current="page"] {
+  background: #e86100;
+  color: #fff;
+}
+
+body.oranje-mode .final-results-cta {
+  border-color: #b34800;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.22), transparent 48%),
+    #e86100;
+  box-shadow: 0 12px 28px rgba(255, 123, 0, 0.24);
+}
+
+body.oranje-mode .final-results-cta:hover,
+body.oranje-mode .final-results-cta:focus-visible {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.3), transparent 48%),
+    #cc5600;
 }
 
 body.oranje-mode h1,
@@ -188,6 +252,7 @@ body.oranje-mode .chart-control-actions button {
     width: 100%;
     min-width: 0;
   }
+
 }
 
 h1,
@@ -605,6 +670,10 @@ body.oranje-mode .prediction-card-next {
   gap: 10px;
 }
 
+.final-highlight-grid {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
 .highlight-card {
   display: grid;
   gap: 7px;
@@ -613,6 +682,125 @@ body.oranje-mode .prediction-card-next {
   border: 1px solid #e0ebe3;
   border-radius: 8px;
   background: linear-gradient(180deg, #fbfdfb, #ffffff);
+}
+
+.final-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 18px;
+  padding: 18px;
+  border: 1px solid #d8e2d9;
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(11, 122, 69, 0.1), rgba(40, 107, 154, 0.08)),
+    #fff;
+}
+
+.final-hero h2 {
+  margin-bottom: 0;
+}
+
+.final-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.final-summary span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 1px solid #d8e2d9;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #4b5a51;
+  font-size: 14px;
+}
+
+.final-summary b {
+  color: #17201b;
+}
+
+.podium-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.podium-card {
+  display: grid;
+  gap: 8px;
+  min-height: 190px;
+  padding: 16px;
+  border: 1px solid #d8e2d9;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fbfdfb, #ffffff);
+  box-shadow: 0 10px 28px rgba(24, 64, 42, 0.08);
+}
+
+.podium-1 {
+  border-color: #d9b245;
+  background: linear-gradient(180deg, #fff8dc, #ffffff);
+}
+
+.podium-2 {
+  border-color: #b9c4cc;
+  background: linear-gradient(180deg, #f3f7f9, #ffffff);
+}
+
+.podium-3 {
+  border-color: #c48a55;
+  background: linear-gradient(180deg, #fff0e4, #ffffff);
+}
+
+.podium-medal,
+.podium-rank {
+  color: #637069;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.podium-card h3 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.podium-points {
+  color: #0b7a45;
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+body.oranje-mode .final-hero,
+body.oranje-mode .podium-card {
+  border-color: #ffb04f;
+  background: linear-gradient(180deg, #fff2dd, #ffffff);
+  box-shadow: 0 8px 22px rgba(255, 123, 0, 0.1);
+}
+
+body.oranje-mode .podium-points {
+  color: #e86100;
+}
+
+@media (max-width: 760px) {
+  .final-hero {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .final-summary {
+    justify-content: flex-start;
+  }
+
+  .podium-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .highlight-title {

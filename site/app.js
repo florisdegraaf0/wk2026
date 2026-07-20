@@ -327,7 +327,7 @@ function biggestMoversPanel(data, gameCount = 1) {
       <label for="moverWindow">Last <strong id="moverWindowValue">${count}</strong> <span id="moverWindowUnit">${count === 1 ? "game" : "games"}</span></label>
       <input id="moverWindow" type="range" min="1" max="${maxGames}" value="${count}" step="1">
     </div>
-    <p class="stat-note" id="moverWindowNote">Rank changes from ${scope}. Positive points are from the selected games only.</p>
+    <p class="stat-note" id="moverWindowNote">Rank changes from ${scope}. Points include the winner bonus when it was awarded with the final game.</p>
     <div id="biggestMoversTable">
       ${biggestMoversTable(biggestMoverRows(data, count))}
     </div>
@@ -371,6 +371,17 @@ function rankMap(rows) {
   return Object.fromEntries(rowsWithRanks(rows).map((row) => [row.player, row.rank]));
 }
 
+function winnerBonusPoints(data, player) {
+  return data.winner?.actual ? data.winner.predictions?.[player]?.points || 0 : 0;
+}
+
+function movementWindowPoints(data, matches, player) {
+  const matchPoints = matches.reduce((total, match) => total + (match.points[player] || 0), 0);
+  const latest = latestPlayedMatch(data);
+  const includesLatest = latest && matches.some((match) => match.id === latest.id);
+  return matchPoints + (includesLatest ? winnerBonusPoints(data, player) : 0);
+}
+
 function leaderboardMovement(data) {
   const latest = latestPlayedMatch(data);
   if (!latest) return { latest: null, byPlayer: {} };
@@ -378,7 +389,7 @@ function leaderboardMovement(data) {
   const previousRows = data.leaderboard
     .map((row) => ({
       player: row.player,
-      points: row.points - (latest.points[row.player] || 0),
+      points: row.points - movementWindowPoints(data, [latest], row.player),
     }))
     .sort((a, b) => b.points - a.points || a.player.localeCompare(b.player));
 
@@ -391,7 +402,7 @@ function leaderboardMovement(data) {
       movement: previousRanks[player] - currentRanks[player],
       previousRank: previousRanks[player],
       currentRank: currentRanks[player],
-      latestPoints: latest.points[player] || 0,
+      latestPoints: movementWindowPoints(data, [latest], player),
     };
   });
 
@@ -414,7 +425,7 @@ function biggestMoverWindow(data, gameCount) {
 
   const windowPoints = Object.fromEntries(data.players.map((player) => [
     player,
-    matches.reduce((total, match) => total + (match.points[player] || 0), 0),
+    movementWindowPoints(data, matches, player),
   ]));
   const previousRows = data.leaderboard
     .map((row) => ({
@@ -1145,6 +1156,10 @@ function bindMobileNavigation() {
   if (!picker) return;
 
   picker.addEventListener("change", () => {
+    if (!picker.value.startsWith("#")) {
+      window.location.href = picker.value;
+      return;
+    }
     const target = document.querySelector(picker.value);
     if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
   });
@@ -2303,7 +2318,7 @@ function bindBiggestMoversControls(data) {
 
     value.textContent = String(count);
     unit.textContent = count === 1 ? "game" : "games";
-    note.textContent = `Rank changes from ${scope}. Positive points are from the selected games only.`;
+    note.textContent = `Rank changes from ${scope}. Points include the winner bonus when it was awarded with the final game.`;
     target.innerHTML = biggestMoversTable(biggestMoverRows(data, count));
   });
 }

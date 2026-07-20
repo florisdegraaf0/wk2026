@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Final Results - World Cup Predictions</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Final results</h1>
+        <p>The tournament wrap-up: podium, points, and the odd little stories the score sheet left behind.</p>
+      </header>
+
+      <nav class="site-nav final-nav" aria-label="Main pages">
+        <a href="index.html">Dashboard</a>
+        <a href="final-results.html" aria-current="page">Final results</a>
+      </nav>
+
+      <section class="final-hero" aria-labelledby="finalHeroTitle">
+        <div>
+          <p id="finalDataStatus" class="stat-note">Loading tournament data...</p>
+          <h2 id="finalHeroTitle">Podium</h2>
+        </div>
+        <div id="finalSummary" class="final-summary"></div>
+      </section>
+
+      <section aria-labelledby="podiumTitle">
+        <h2 id="podiumTitle">Top 3 Points</h2>
+        <div id="finalPodium" class="podium-grid"></div>
+      </section>
+
+      <section aria-labelledby="fullTableTitle">
+        <h2 id="fullTableTitle">Final Table</h2>
+        <div id="finalTable"></div>
+      </section>
+
+      <section aria-labelledby="winnerTitle">
+        <h2 id="winnerTitle">Winner Prediction</h2>
+        <div id="winnerPanel"></div>
+      </section>
+
+      <section aria-labelledby="highlightsTitle">
+        <h2 id="highlightsTitle">Tournament Highlights</h2>
+        <div id="finalHighlights"></div>
+      </section>
+    </main>
+
+    <script src="final-results.js"></script>
+  </body>
+</html>
