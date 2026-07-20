@@ -807,6 +807,83 @@ body.oranje-mode .prediction-card-next {
   line-height: 1.58;
 }
 
+.pattern-plot {
+  position: relative;
+  min-height: 380px;
+  margin: 18px 0 12px;
+  border-left: 2px solid #97a99f;
+  border-bottom: 2px solid #97a99f;
+  background:
+    linear-gradient(90deg, rgba(16, 32, 23, 0.06) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(16, 32, 23, 0.06) 1px, transparent 1px);
+  background-size: 20% 20%;
+}
+
+.pattern-axis {
+  position: absolute;
+  color: #637069;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.pattern-axis-x {
+  right: 0;
+  bottom: -28px;
+}
+
+.pattern-axis-y {
+  top: 0;
+  left: -2px;
+  transform: translate(-42%, -28px);
+}
+
+.pattern-dot {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border: 2px solid #0b7a45;
+  border-radius: 999px;
+  background: rgba(11, 122, 69, 0.16);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 6px 16px rgba(16, 32, 23, 0.14);
+}
+
+.pattern-dot-bonus {
+  border-color: #e86100;
+  background: rgba(232, 97, 0, 0.18);
+}
+
+.pattern-dot span {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  max-width: 72px;
+  color: #102017;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.05;
+  text-align: center;
+  transform: translateX(-50%);
+  overflow-wrap: anywhere;
+}
+
+.pattern-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 36px;
+}
+
+.pattern-summary span {
+  padding: 6px 8px;
+  border: 1px solid #e0ebe3;
+  border-radius: 8px;
+  background: #fbfdfb;
+  color: #39463d;
+  font-size: 12px;
+}
+
 body.oranje-mode .final-hero,
 body.oranje-mode .podium-card {
   border-color: #ffb04f;
@@ -826,6 +903,15 @@ body.oranje-mode .final-report-item h3 {
   color: #8a3b00;
 }
 
+body.oranje-mode .pattern-plot {
+  border-color: #e86100;
+}
+
+body.oranje-mode .pattern-summary span {
+  border-color: #ffd29a;
+  background: #fff8ed;
+}
+
 @media (max-width: 760px) {
   .final-hero {
     grid-template-columns: 1fr;
@@ -838,6 +924,14 @@ body.oranje-mode .final-report-item h3 {
 
   .podium-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pattern-plot {
+    min-height: 420px;
+  }
+
+  .pattern-axis-y {
+    transform: translate(0, -28px);
   }
 }
 

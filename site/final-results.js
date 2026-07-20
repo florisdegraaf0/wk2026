@@ -197,7 +197,12 @@ function finalReportHighlights(data) {
   const exactGame = bestBy(games, (a, b) => b.exact - a.exact || b.points - a.points || a.label.localeCompare(b.label));
   const finalMatch = played[played.length - 1];
   const finalGains = data.players
-    .map((player) => ({ player, points: finalGameGain(data, finalMatch, player) }))
+    .map((player) => ({
+      player,
+      matchPoints: finalMatch?.points?.[player] || 0,
+      winnerPoints: winnerBonusPoints(data, player),
+      points: finalGameGain(data, finalMatch, player),
+    }))
     .sort((a, b) => b.points - a.points || a.player.localeCompare(b.player));
   const previousRows = rankedPointRows(data.players.map((player) => ({
     player,
@@ -234,7 +239,7 @@ function finalReportHighlights(data) {
     },
     {
       title: "Final-game drama",
-      body: `${finalMatch.label} ended ${finalMatch.score} and was worth the last big shake-up. ${finalGains[0].player} gained ${finalGains[0].points} points from the final plus any winner bonus.${finalMoves.length ? ` Biggest rank move: ${finalMoves[0].player} went from #${finalMoves[0].from} to #${finalMoves[0].to}.` : " No ranks changed after the last game."}`,
+      body: `${finalMatch.label} ended ${finalMatch.score} and was worth the last big shake-up. ${finalGains[0].player} gained ${finalGains[0].points} points in the deciding package: ${finalGains[0].matchPoints} from the final score${finalGains[0].winnerPoints ? ` and ${finalGains[0].winnerPoints} from the winner bonus` : ""}.${finalMoves.length ? ` Biggest rank move: ${finalMoves[0].player} went from #${finalMoves[0].from} to #${finalMoves[0].to}.` : " No ranks changed after the last game."}`,
     },
     {
       title: "Precision prize",
@@ -348,12 +353,66 @@ function renderHighlights(data) {
   ` : `<p class="stat-note">Highlights will appear once games have been scored.</p>`;
 }
 
+function scaleValue(value, min, max, low = 8, high = 92) {
+  if (max === min) return (low + high) / 2;
+  return low + ((value - min) / (max - min)) * (high - low);
+}
+
+function renderScoringPatterns(data) {
+  const stats = playerReportRows(data);
+  if (!stats.length) {
+    document.querySelector("#scoringPatterns").innerHTML = `<p class="stat-note">Scoring patterns will appear once games have been scored.</p>`;
+    return;
+  }
+
+  const finalByPlayer = Object.fromEntries(finalRows(data).map((row) => [row.player, row]));
+  const rows = stats.map((row) => ({
+    ...row,
+    finalPoints: finalByPlayer[row.player]?.points || row.totalPoints,
+    winnerPoints: finalByPlayer[row.player]?.winnerPoints || 0,
+  }));
+  const exactValues = rows.map((row) => row.exactMatches);
+  const consensusValues = rows.map((row) => row.consensusBreaks);
+  const pointValues = rows.map((row) => row.finalPoints);
+  const minExact = Math.min(...exactValues);
+  const maxExact = Math.max(...exactValues);
+  const minConsensus = Math.min(...consensusValues);
+  const maxConsensus = Math.max(...consensusValues);
+  const minPoints = Math.min(...pointValues);
+  const maxPoints = Math.max(...pointValues);
+  const sortedRows = [...rows].sort((a, b) => b.finalPoints - a.finalPoints || a.player.localeCompare(b.player));
+
+  document.querySelector("#scoringPatterns").innerHTML = `
+    <p class="stat-note">X-axis: exact scores. Y-axis: picks away from the crowd. Bigger dots finished with more points; orange rings collected the winner bonus.</p>
+    <div class="pattern-plot" role="img" aria-label="Scatter plot of exact scores against consensus-breaking picks by player">
+      <div class="pattern-axis pattern-axis-x">Exact scores</div>
+      <div class="pattern-axis pattern-axis-y">Different picks</div>
+      ${rows.map((row) => {
+        const x = scaleValue(row.exactMatches, minExact, maxExact);
+        const y = 100 - scaleValue(row.consensusBreaks, minConsensus, maxConsensus);
+        const size = Math.round(scaleValue(row.finalPoints, minPoints, maxPoints, 22, 42));
+        return `
+          <div class="pattern-dot${row.winnerPoints ? " pattern-dot-bonus" : ""}" style="left: ${x}%; top: ${y}%; width: ${size}px; height: ${size}px;" title="${escapeHtml(row.player)}: ${row.exactMatches} exact, ${row.consensusBreaks} different picks, ${row.finalPoints} points">
+            <span>${escapeHtml(row.player)}</span>
+          </div>
+        `;
+      }).join("")}
+    </div>
+    <div class="pattern-summary">
+      ${sortedRows.slice(0, 5).map((row) => `
+        <span><b>${escapeHtml(row.player)}</b> ${row.exactMatches} exact, ${row.consensusBreaks} different, ${row.finalPoints} pts</span>
+      `).join("")}
+    </div>
+  `;
+}
+
 function renderFinalResults(data) {
   renderSummary(data);
   renderPodium(data);
+  renderHighlights(data);
+  renderScoringPatterns(data);
   renderTable(data);
   renderWinner(data);
-  renderHighlights(data);
 }
 
 fetch("/api/data")
