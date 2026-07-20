@@ -358,6 +358,14 @@ function scaleValue(value, min, max, low = 8, high = 92) {
   return low + ((value - min) / (max - min)) * (high - low);
 }
 
+function playerInitials(name) {
+  const parts = String(name || "")
+    .split(/\s+/)
+    .filter(Boolean);
+  if (parts.length <= 1) return (parts[0] || "").slice(0, 2).toUpperCase();
+  return parts.map((part) => part[0]).join("").slice(0, 2).toUpperCase();
+}
+
 function renderScoringPatterns(data) {
   const stats = playerReportRows(data);
   if (!stats.length) {
@@ -390,17 +398,17 @@ function renderScoringPatterns(data) {
       ${rows.map((row) => {
         const x = scaleValue(row.exactMatches, minExact, maxExact);
         const y = 100 - scaleValue(row.consensusBreaks, minConsensus, maxConsensus);
-        const size = Math.round(scaleValue(row.finalPoints, minPoints, maxPoints, 22, 42));
+        const size = Math.round(scaleValue(row.finalPoints, minPoints, maxPoints, 20, 34));
         return `
-          <div class="pattern-dot${row.winnerPoints ? " pattern-dot-bonus" : ""}" style="left: ${x}%; top: ${y}%; width: ${size}px; height: ${size}px;" title="${escapeHtml(row.player)}: ${row.exactMatches} exact, ${row.consensusBreaks} different picks, ${row.finalPoints} points">
-            <span>${escapeHtml(row.player)}</span>
+          <div class="pattern-dot${row.winnerPoints ? " pattern-dot-bonus" : ""}" style="left: ${x}%; top: ${y}%; width: ${size}px; height: ${size}px;" title="${escapeHtml(row.player)}: ${row.exactMatches} exact, ${row.consensusBreaks} different picks, ${row.finalPoints} points" aria-label="${escapeHtml(row.player)}: ${row.exactMatches} exact, ${row.consensusBreaks} different picks, ${row.finalPoints} points">
+            <span>${escapeHtml(playerInitials(row.player))}</span>
           </div>
         `;
       }).join("")}
     </div>
     <div class="pattern-summary">
-      ${sortedRows.slice(0, 5).map((row) => `
-        <span><b>${escapeHtml(row.player)}</b> ${row.exactMatches} exact, ${row.consensusBreaks} different, ${row.finalPoints} pts</span>
+      ${sortedRows.map((row) => `
+        <span><b>${escapeHtml(playerInitials(row.player))}</b> ${escapeHtml(row.player)}: ${row.exactMatches} exact, ${row.consensusBreaks} different, ${row.finalPoints} pts</span>
       `).join("")}
     </div>
   `;

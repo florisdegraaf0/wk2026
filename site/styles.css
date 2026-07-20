@@ -810,13 +810,14 @@ body.oranje-mode .prediction-card-next {
 .pattern-plot {
   position: relative;
   min-height: 380px;
-  margin: 18px 0 12px;
+  margin: 28px 0 12px;
   border-left: 2px solid #97a99f;
   border-bottom: 2px solid #97a99f;
   background:
     linear-gradient(90deg, rgba(16, 32, 23, 0.06) 1px, transparent 1px),
     linear-gradient(0deg, rgba(16, 32, 23, 0.06) 1px, transparent 1px);
   background-size: 20% 20%;
+  overflow: visible;
 }
 
 .pattern-axis {
@@ -829,13 +830,13 @@ body.oranje-mode .prediction-card-next {
 
 .pattern-axis-x {
   right: 0;
-  bottom: -28px;
+  bottom: -26px;
 }
 
 .pattern-axis-y {
   top: 0;
-  left: -2px;
-  transform: translate(-42%, -28px);
+  left: 0;
+  transform: translateY(-26px);
 }
 
 .pattern-dot {
@@ -845,6 +846,11 @@ body.oranje-mode .prediction-card-next {
   border: 2px solid #0b7a45;
   border-radius: 999px;
   background: rgba(11, 122, 69, 0.16);
+  color: #102017;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
   transform: translate(-50%, -50%);
   box-shadow: 0 6px 16px rgba(16, 32, 23, 0.14);
 }
@@ -855,23 +861,14 @@ body.oranje-mode .prediction-card-next {
 }
 
 .pattern-dot span {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 50%;
-  max-width: 72px;
-  color: #102017;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.05;
-  text-align: center;
-  transform: translateX(-50%);
-  overflow-wrap: anywhere;
+  display: block;
+  pointer-events: none;
 }
 
 .pattern-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 6px 8px;
   margin-top: 36px;
 }
 
@@ -882,6 +879,7 @@ body.oranje-mode .prediction-card-next {
   background: #fbfdfb;
   color: #39463d;
   font-size: 12px;
+  line-height: 1.25;
 }
 
 body.oranje-mode .final-hero,
