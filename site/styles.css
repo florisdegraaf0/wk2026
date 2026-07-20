@@ -777,6 +777,36 @@ body.oranje-mode .prediction-card-next {
   line-height: 1;
 }
 
+.final-report {
+  display: grid;
+  gap: 0;
+  max-width: 900px;
+}
+
+.final-report-item {
+  padding: 16px 0;
+  border-top: 1px solid #e0ebe3;
+}
+
+.final-report-item:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.final-report-item h3 {
+  margin: 0 0 6px;
+  color: #102017;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.final-report-item p {
+  margin: 0;
+  color: #39463d;
+  font-size: 15px;
+  line-height: 1.58;
+}
+
 body.oranje-mode .final-hero,
 body.oranje-mode .podium-card {
   border-color: #ffb04f;
@@ -786,6 +816,14 @@ body.oranje-mode .podium-card {
 
 body.oranje-mode .podium-points {
   color: #e86100;
+}
+
+body.oranje-mode .final-report-item {
+  border-top-color: #ffd29a;
+}
+
+body.oranje-mode .final-report-item h3 {
+  color: #8a3b00;
 }
 
 @media (max-width: 760px) {

@@ -93,14 +93,36 @@ function finalRows(data) {
     }));
 }
 
-function highlightCards(data) {
+function rankedPointRows(rows) {
+  return rowsWithRanks([...rows].sort((a, b) => b.points - a.points || a.player.localeCompare(b.player)));
+}
+
+function rankByPlayer(rows) {
+  return Object.fromEntries(rows.map((row) => [row.player, row.rank]));
+}
+
+function matchOnlyRows(data) {
+  return rankedPointRows(data.players.map((player) => {
+    const row = data.leaderboard.find((item) => item.player === player);
+    return {
+      player,
+      points: row?.matchPoints ?? (row?.points || 0) - (row?.winnerPoints || 0),
+    };
+  }));
+}
+
+function winnerBonusPoints(data, player) {
+  return data.winner?.actual ? data.winner.predictions?.[player]?.points || 0 : 0;
+}
+
+function finalGameGain(data, match, player) {
+  return (match?.points?.[player] || 0) + winnerBonusPoints(data, player);
+}
+
+function playerReportRows(data) {
   const played = playedMatchesByDate(data);
   if (!played.length) return [];
 
-  const gameRows = played.map((match) => ({
-    label: `${match.id}. ${match.label}`,
-    points: data.players.reduce((total, player) => total + (match.points[player] || 0), 0),
-  }));
   const lowScoringGames = [...played]
     .map((match) => ({
       match,
@@ -110,7 +132,7 @@ function highlightCards(data) {
     .slice(0, Math.max(1, Math.ceil(played.length * 0.3)))
     .map((row) => row.match);
 
-  const rows = data.players.map((player) => {
+  return data.players.map((player) => {
     const points = played.map((match) => match.points[player] || 0);
     const totalPoints = points.reduce((total, value) => total + value, 0);
     const exactMatches = points.filter((value) => value >= 10).length;
@@ -139,29 +161,101 @@ function highlightCards(data) {
       nearlyExactCount: played.reduce((total, match) => total + (nearlyExact(parseScore(match.predictions?.[player]), parseScore(match.score)) ? 1 : 0), 0),
     };
   });
+}
 
-  const bestGame = bestBy(gameRows, (a, b) => b.points - a.points || a.label.localeCompare(b.label));
-  const hardestGame = bestBy(gameRows, (a, b) => a.points - b.points || a.label.localeCompare(b.label));
-  const exact = bestBy(rows, (a, b) => b.exactMatches - a.exactMatches || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
-  const partial = bestBy(rows, (a, b) => b.partialPoints - a.partialPoints || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
-  const hot = bestBy(rows, (a, b) => b.hotStreak - a.hotStreak || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
-  const cold = bestBy(rows, (a, b) => b.coldStreak - a.coldStreak || a.totalPoints - b.totalPoints || a.player.localeCompare(b.player));
-  const contrarian = bestBy(rows, (a, b) => b.consensusBreaks - a.consensusBreaks || b.predictions - a.predictions || a.player.localeCompare(b.player));
-  const lonely = bestBy(rows, (a, b) => b.lonelyPoints - a.lonelyPoints || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
-  const chaos = bestBy(rows, (a, b) => b.chaosPoints - a.chaosPoints || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
-  const almost = bestBy(rows, (a, b) => b.nearlyExactCount - a.nearlyExactCount || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
+function gameReportRows(data) {
+  return playedMatchesByDate(data).map((match) => ({
+    label: `${match.id}. ${match.label}`,
+    score: match.score,
+    points: data.players.reduce((total, player) => total + (match.points[player] || 0), 0),
+    exact: data.players.filter((player) => (match.points[player] || 0) >= 10).length,
+  }));
+}
+
+function finalReportHighlights(data) {
+  const played = playedMatchesByDate(data);
+  if (!played.length) return [];
+
+  const finalLeaderboard = finalRows(data);
+  const matchRows = matchOnlyRows(data);
+  const playerStats = playerReportRows(data);
+  const games = gameReportRows(data);
+  const champion = finalLeaderboard[0];
+  const runnerUp = finalLeaderboard[1];
+  const third = finalLeaderboard[2];
+  const matchLeader = matchRows[0];
+  const exact = bestBy(playerStats, (a, b) => b.exactMatches - a.exactMatches || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
+  const partial = bestBy(playerStats, (a, b) => b.partialPoints - a.partialPoints || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
+  const hot = bestBy(playerStats, (a, b) => b.hotStreak - a.hotStreak || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
+  const cold = bestBy(playerStats, (a, b) => b.coldStreak - a.coldStreak || a.totalPoints - b.totalPoints || a.player.localeCompare(b.player));
+  const contrarian = bestBy(playerStats, (a, b) => b.consensusBreaks - a.consensusBreaks || b.predictions - a.predictions || a.player.localeCompare(b.player));
+  const lonely = bestBy(playerStats, (a, b) => b.lonelyPoints - a.lonelyPoints || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
+  const chaos = bestBy(playerStats, (a, b) => b.chaosPoints - a.chaosPoints || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
+  const almost = bestBy(playerStats, (a, b) => b.nearlyExactCount - a.nearlyExactCount || b.totalPoints - a.totalPoints || a.player.localeCompare(b.player));
+  const bestGame = bestBy(games, (a, b) => b.points - a.points || a.label.localeCompare(b.label));
+  const hardestGame = bestBy(games, (a, b) => a.points - b.points || a.label.localeCompare(b.label));
+  const exactGame = bestBy(games, (a, b) => b.exact - a.exact || b.points - a.points || a.label.localeCompare(b.label));
+  const finalMatch = played[played.length - 1];
+  const finalGains = data.players
+    .map((player) => ({ player, points: finalGameGain(data, finalMatch, player) }))
+    .sort((a, b) => b.points - a.points || a.player.localeCompare(b.player));
+  const previousRows = rankedPointRows(data.players.map((player) => ({
+    player,
+    points: (data.leaderboard.find((row) => row.player === player)?.points || 0) - finalGameGain(data, finalMatch, player),
+  })));
+  const previousRanks = rankByPlayer(previousRows);
+  const currentRanks = rankByPlayer(finalLeaderboard);
+  const finalMoves = data.players
+    .map((player) => ({
+      player,
+      from: previousRanks[player],
+      to: currentRanks[player],
+      movement: previousRanks[player] - currentRanks[player],
+      points: finalGameGain(data, finalMatch, player),
+    }))
+    .filter((row) => row.movement !== 0)
+    .sort((a, b) => Math.abs(b.movement) - Math.abs(a.movement) || b.movement - a.movement || a.player.localeCompare(b.player));
+  const bonusPlayers = data.players
+    .filter((player) => winnerBonusPoints(data, player) > 0)
+    .sort((a, b) => a.localeCompare(b));
+  const podiumGap = third ? champion.points - third.points : 0;
+  const titleGap = runnerUp ? champion.points - runnerUp.points : 0;
 
   return [
-    { title: "Exact score artist", player: exact.player, value: `${exact.exactMatches}`, detail: "Exact scores" },
-    { title: "Best partial scorer", player: partial.player, value: `${partial.partialPoints} pts`, detail: "Points without exact scores" },
-    { title: "Hot streak", player: hot.player, value: `${hot.hotStreak} games`, detail: "Longest run with points" },
-    { title: "Cold streak", player: cold.player, value: `${cold.coldStreak} games`, detail: "Longest run without points" },
-    { title: "Consensus breaker", player: contrarian.player, value: `${contrarian.consensusBreaks} picks`, detail: "Predictions away from the crowd" },
-    { title: "Lonely prophet", player: lonely.player, value: `${lonely.lonelyPoints} pts`, detail: "Points from unique predictions" },
-    { title: "Chaos surfer", player: chaos.player, value: `${chaos.chaosPoints} pts`, detail: "Points in the lowest-scoring games" },
-    { title: "Nearly nailed it", player: almost.player, value: `${almost.nearlyExactCount}`, detail: "Scores one goal away from exact" },
-    { title: "Easiest game", player: "", value: `${bestGame.points} pts`, detail: bestGame.label },
-    { title: "Hardest game", player: "", value: `${hardestGame.points} pts`, detail: hardestGame.label },
+    {
+      title: `A ${titleGap}-point title race`,
+      body: `${champion.player} finished on ${champion.points} points, only ${titleGap} ahead of ${runnerUp.player}. The entire podium was squeezed into ${podiumGap} points, with ${third.player} close behind on ${third.points}.`,
+    },
+    {
+      title: "The winner bonus changed the shape of the table",
+      body: data.winner?.actual
+        ? `${data.winner.actual} decided the pool as much as the final itself. ${bonusPlayers.length ? bonusPlayers.join(", ") : "Nobody"} picked the winner and collected the ${data.winner.points}-point bonus. Without that bonus, ${matchLeader.player} would have led the match-only table on ${matchLeader.points} points.`
+        : "The tournament winner is not filled yet, so the winner bonus is still waiting to land.",
+    },
+    {
+      title: "Final-game drama",
+      body: `${finalMatch.label} ended ${finalMatch.score} and was worth the last big shake-up. ${finalGains[0].player} gained ${finalGains[0].points} points from the final plus any winner bonus.${finalMoves.length ? ` Biggest rank move: ${finalMoves[0].player} went from #${finalMoves[0].from} to #${finalMoves[0].to}.` : " No ranks changed after the last game."}`,
+    },
+    {
+      title: "Precision prize",
+      body: `${exact.player} was the exact-score specialist with ${exact.exactMatches} perfect predictions. ${almost.player} had the most near misses, landing one goal away from exact ${almost.nearlyExactCount} times.`,
+    },
+    {
+      title: "Grinding out points",
+      body: `${partial.player} was the best partial scorer, collecting ${partial.partialPoints} points without needing exact scores. That is the unglamorous route, but it keeps you alive for ${played.length} games.`,
+    },
+    {
+      title: "Runs, droughts, and stubbornness",
+      body: `${hot.player} had the hottest streak with points in ${hot.hotStreak} consecutive games. ${cold.player} had the longest cold spell at ${cold.coldStreak} games, while ${contrarian.player} broke away from the consensus most often with ${contrarian.consensusBreaks} different picks.`,
+    },
+    {
+      title: "The strange points",
+      body: `${lonely.player} scored ${lonely.lonelyPoints} points from unique predictions, and ${chaos.player} handled the lowest-scoring games best with ${chaos.chaosPoints} points in the hardest slice of the tournament.`,
+    },
+    {
+      title: "Games everyone remembers differently",
+      body: `${bestGame.label} (${bestGame.score}) was the friendliest game for the pool with ${bestGame.points} total points. ${hardestGame.label} (${hardestGame.score}) was the trap game with only ${hardestGame.points}. The biggest exact-score party was ${exactGame.label}, with ${exactGame.exact} perfect picks.`,
+    },
   ];
 }
 
@@ -241,15 +335,13 @@ function renderWinner(data) {
 }
 
 function renderHighlights(data) {
-  const cards = highlightCards(data);
-  document.querySelector("#finalHighlights").innerHTML = cards.length ? `
-    <div class="highlight-grid final-highlight-grid">
-      ${cards.map((card) => `
-        <article class="highlight-card">
-          <div class="highlight-title">${escapeHtml(card.title)}</div>
-          ${card.player ? `<div class="highlight-player">${escapeHtml(card.player)}</div>` : ""}
-          <div class="highlight-value">${escapeHtml(card.value)}</div>
-          <div class="highlight-detail">${escapeHtml(card.detail)}</div>
+  const highlights = finalReportHighlights(data);
+  document.querySelector("#finalHighlights").innerHTML = highlights.length ? `
+    <div class="final-report">
+      ${highlights.map((highlight) => `
+        <article class="final-report-item">
+          <h3>${escapeHtml(highlight.title)}</h3>
+          <p>${escapeHtml(highlight.body)}</p>
         </article>
       `).join("")}
     </div>
